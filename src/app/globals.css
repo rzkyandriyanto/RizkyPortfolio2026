@@ -1,26 +1,296 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Hapus atau sesuaikan variabel default agar tidak bentrok */
+  --background: #e9e4d9;
+  --foreground: #1a1a1a;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Mendaftarkan variabel agar bisa dipakai sebagai utility class (e.g., bg-paper) */
+  --color-paper: #e9e4d9;
+  --color-ink: #1a1a1a;
+  --color-orange-main: #ff6b00;
+
+  --font-space: var(--font-space);
+  --font-bebas-neue: var(--font-bebas-neue);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Layer Base untuk Body */
+@layer base {
+  body {
+    background-color: #e9e4d9; /* Warna Krem dari gambar referensi 4 */
+    color: #1a1a1a;
+    position: relative;
+    min-height: 100vh;
+  }
+
+  /* Efek Kotak-kotak (Grid) yang kamu minta */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Tambahkan di globals.css */
+.bg-grid {
+  background-color: #e9e4d9; /* Warna dasar krem kamu */
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px; /* Ukuran kotak grid-nya */
+}
+
+/* Biar pas hover atau interaksi lebih cakep */
+.bg-grid-bold {
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+}
+
+/* Menghapus paksaan dark mode agar warna krem tetap muncul */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #e9e4d9;
+    --foreground: #1a1a1a;
+  }
+}
+
+/* --- GHOST PRELOADER STYLE --- */
+.ghost-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px; /* Jarak antar hantu */
+}
+
+.ghost {
+  position: relative;
+  scale: 0.5; /* Ukuran hantu diperkecil */
+}
+
+.ghost-body {
+  animation: upNDown infinite 0.5s;
+  position: relative;
+  width: 140px;
+  height: 140px;
+  display: grid;
+  grid-template-columns: repeat(14, 1fr);
+  grid-template-rows: repeat(14, 1fr);
+  grid-template-areas:
+    "a1  a2  a3  a4  a5  top0  top0  top0  top0  a10 a11 a12 a13 a14"
+    "b1  b2  b3  top1 top1 top1 top1 top1 top1 top1 top1 b12 b13 b14"
+    "c1 c2 top2 top2 top2 top2 top2 top2 top2 top2 top2 top2 c13 c14"
+    "d1 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 d14"
+    "e1 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 e14"
+    "f1 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 f14"
+    "top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4"
+    "top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4"
+    "top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4"
+    "top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4"
+    "top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4"
+    "top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4"
+    "st0 st0 an4 st1 an7 st2 an10 an10 st3 an13 st4 an16 st5 st5"
+    "an1 an2 an3 an5 an6 an8 an9 an9 an11 an12 an14 an15 an17 an18";
+}
+
+/* Ganti semua yang tadinya 'red' jadi 'var(--ghost-color)' */
+.top0,
+.top1,
+.top2,
+.top3,
+.top4,
+.st0,
+.st1,
+.st2,
+.st3,
+.st4,
+.st5 {
+  background-color: var(--ghost-color);
+}
+
+.top0 {
+  grid-area: top0;
+}
+.top1 {
+  grid-area: top1;
+}
+.top2 {
+  grid-area: top2;
+}
+.top3 {
+  grid-area: top3;
+}
+.top4 {
+  grid-area: top4;
+}
+.st0 {
+  grid-area: st0;
+}
+.st1 {
+  grid-area: st1;
+}
+.st2 {
+  grid-area: st2;
+}
+.st3 {
+  grid-area: st3;
+}
+.st4 {
+  grid-area: st4;
+}
+.st5 {
+  grid-area: st5;
+}
+
+/* Flicker Animations */
+.an1,
+.an18 {
+  grid-area: an1;
+  animation: flicker0 infinite 0.5s;
+}
+.an2,
+.an17,
+.an3,
+.an16,
+.an4,
+.an15,
+.an9,
+.an10 {
+  animation: flicker1 infinite 0.5s;
+}
+.an6,
+.an12,
+.an7,
+.an13,
+.an8,
+.an11 {
+  animation: flicker0 infinite 0.5s;
+}
+
+@keyframes upNDown {
+  0%,
+  49% {
+    transform: translateY(0px);
+  }
+  50%,
+  100% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes flicker0 {
+  0%,
+  49% {
+    background-color: var(--ghost-color);
+  }
+  50%,
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes flicker1 {
+  0%,
+  49% {
+    background-color: transparent;
+  }
+  50%,
+  100% {
+    background-color: var(--ghost-color);
+  }
+}
+
+.eye,
+.eye1 {
+  width: 40px;
+  height: 50px;
+  position: absolute;
+  top: 30px;
+}
+.eye {
+  left: 10px;
+}
+.eye1 {
+  right: 30px;
+}
+.eye::before,
+.eye1::before {
+  content: "";
+  background-color: white;
+  width: 20px;
+  height: 50px;
+  transform: translateX(10px);
+  display: block;
+  position: absolute;
+}
+.eye::after,
+.eye1::after {
+  content: "";
+  background-color: white;
+  width: 40px;
+  height: 30px;
+  transform: translateY(10px);
+  display: block;
+  position: absolute;
+}
+
+.pupil,
+.pupil1 {
+  width: 20px;
+  height: 20px;
+  background-color: blue;
+  position: absolute;
+  top: 50px;
+  z-index: 1;
+  animation: eyesMovement infinite 3s;
+}
+.pupil {
+  left: 10px;
+}
+.pupil1 {
+  right: 50px;
+}
+
+@keyframes eyesMovement {
+  0%,
+  49% {
+    transform: translateX(0px);
+  }
+  50%,
+  99% {
+    transform: translateX(10px);
+  }
+  100% {
+    transform: translateX(0px);
+  }
+}
+
+.ghost-shadow {
+  background-color: black;
+  width: 140px;
+  height: 140px;
+  position: absolute;
+  border-radius: 50%;
+  transform: rotateX(80deg);
+  filter: blur(20px);
+  top: 80%;
+  animation: shadowMovement infinite 0.5s;
+}
+@keyframes shadowMovement {
+  0%,
+  49% {
+    opacity: 0.5;
+  }
+  50%,
+  100% {
+    opacity: 0.2;
+  }
 }
