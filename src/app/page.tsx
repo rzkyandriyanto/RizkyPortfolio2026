@@ -169,7 +169,7 @@ export default function Home() {
           >
             <div className="w-full h-full rounded-[3rem] overflow-hidden border-4 border-black shadow-2xl bg-zinc-900 relative group">
               <Image
-                src="/Rizky.jpeg"
+                src="/rizky.jpeg"
                 alt="rizky"
                 fill
                 className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
