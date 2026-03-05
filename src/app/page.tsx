@@ -9,11 +9,11 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 export default function Home() {
-  const profileImageRef = useRef(null);
-  const nameContainerRef = useRef(null);
-  const bioSectionRef = useRef(null);
-  const bioNarrativeRef = useRef(null);
-  const projectsHeaderRef = useRef(null);
+  const profileImageRef = useRef<HTMLDivElement>(null);
+  const nameContainerRef = useRef<HTMLDivElement>(null);
+  const bioSectionRef = useRef<HTMLDivElement>(null);
+  const bioNarrativeRef = useRef<HTMLDivElement>(null);
+  const projectsHeaderRef = useRef<HTMLDivElement>(null);
   const projectCardsRef = useRef<HTMLDivElement[]>([]);
   const animeBoxRef = useRef(null);
 
