@@ -18,7 +18,8 @@ export default function Home() {
   const animeBoxRef = useRef(null);
 
   useLayoutEffect(() => {
-    let ctx = gsap.context(() => {
+    // Ubah let jadi const di sini
+    const ctx = gsap.context(() => {
       const tl = gsap.timeline({ paused: true });
       const photo = profileImageRef.current;
 
@@ -168,8 +169,8 @@ export default function Home() {
           >
             <div className="w-full h-full rounded-[3rem] overflow-hidden border-4 border-black shadow-2xl bg-zinc-900 relative group">
               <Image
-                src="/Rizky.jpeg"
-                alt="Rizky"
+                src="/rizky.jpeg"
+                alt="rizky"
                 fill
                 className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
                 priority
@@ -224,7 +225,7 @@ export default function Home() {
             My Philosophy
           </div>
           <p className="text-3xl md:text-5xl font-bold leading-[1.1] tracking-tight italic">
-            "My journey in tech ignited in 2023, evolving into a relentless
+            &quot;My journey in tech ignited in 2023, evolving into a relentless
             mission to build work that truly resonates. As a{" "}
             <span className="text-orange-500 not-italic font-black underline decoration-8 underline-offset-4">
               Creative Developer
@@ -238,10 +239,10 @@ export default function Home() {
             <span className="bg-black text-[#e9e4d9] px-2 not-italic">
               flawless performance
             </span>
-            , constantly pushing the limits of what’s possible on the web."
+            , constantly pushing the limits of what’s possible on the web.&quot;
           </p>
           <div className="mt-12 font-bebas-neue text-4xl text-orange-500 tracking-wider uppercase">
-            Let's craft something unforgettable together.
+            Let&apos;s craft something unforgettable together.
           </div>
         </div>
       </section>
