@@ -262,66 +262,6 @@ export default function Home() {
           />
         </div>
       </div>
-
-      {/* PROJECTS SECTION (PASTIKAN REF TERPASANG) */}
-      <section className="mt-45 w-full text-center">
-        <div
-          ref={projectsHeaderRef}
-          className="inline-block border-4 border-black rounded-3xl px-6 md:px-16 py-4 relative mb-24 bg-blue-400/30 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
-        >
-          <h2 className="text-4xl md:text-7xl font-black uppercase tracking-[0.2em] text-orange-500 leading-none">
-            ❖ SELECTED PROJECTS ❖
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left">
-          {/* Proyek 1 */}
-          <div
-            ref={(el) => {
-              if (el) projectCardsRef.current[0] = el;
-            }}
-            className="group aspect-[4/3] bg-zinc-900 border-4 border-black rounded-[2.5rem] p-10 flex flex-col justify-between hover:border-orange-500 transition-all cursor-pointer shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]"
-          >
-            <div className="flex justify-between items-start text-white">
-              <span className="text-xs font-bold uppercase opacity-50">
-                Web3 / 2026
-              </span>
-              <span className="text-4xl">↗</span>
-            </div>
-            <div className="text-white">
-              <h3 className="text-5xl font-black uppercase mb-4">
-                Avalanche DeFi
-              </h3>
-              <p className="text-xl opacity-60 text-white">
-                Interface built on Fuji Testnet.
-              </p>
-            </div>
-          </div>
-
-          {/* Proyek 2 */}
-          <div
-            ref={(el) => {
-              if (el) projectCardsRef.current[1] = el;
-            }}
-            className="group aspect-[4/3] bg-zinc-900 border-4 border-black rounded-[2.5rem] p-10 flex flex-col justify-between hover:border-blue-400 transition-all cursor-pointer shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]"
-          >
-            <div className="flex justify-between items-start text-white">
-              <span className="text-xs font-bold uppercase opacity-50">
-                ML / 2025
-              </span>
-              <span className="text-4xl">↗</span>
-            </div>
-            <div className="text-white">
-              <h3 className="text-5xl font-black uppercase mb-4">
-                Sentiment AI
-              </h3>
-              <p className="text-xl opacity-60 text-white">
-                YouTube analysis with BiLSTM.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
     </main>
   );
 }
