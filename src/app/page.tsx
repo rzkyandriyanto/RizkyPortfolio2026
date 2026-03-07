@@ -147,7 +147,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen px-6 md:px-16 pt-38 md:pt-42 pb-20 overflow-hidden bg-grid font-space-grotesk text-black">
+    <main className="min-h-screen px-6 md:px-16 pt-40 md:pt-42 pb-20 overflow-hidden bg-grid font-space-grotesk text-black">
       <section className="flex flex-col items-center justify-center">
         {/* === HERO SECTION === */}
         <div className="relative w-full flex flex-col-reverse md:flex-row items-center justify-between gap-10 border-b-4 border-black pb-24">
@@ -155,17 +155,17 @@ export default function Home() {
             ref={nameContainerRef}
             className="w-full md:w-auto flex flex-col"
           >
-            <h1 className="font-bebas-neue text-[18vw] md:text-[12vw] uppercase leading-[0.8] tracking-tighter text-orange-500">
+            <h1 className="font-bebas-neue text-[15vw] md:text-[20vw] uppercase leading-[0.85] tracking-tighter text-orange-500 pt-14">
               RIZKY
             </h1>
-            <h1 className="font-bebas-neue text-[18vw] md:text-[12vw] uppercase leading-[0.8] tracking-tighter text-blue-400">
+            <h1 className="font-bebas-neue text-[15vw] md:text-[12vw] uppercase leading-[0.85] tracking-tighter text-blue-400">
               ANDRIYANTO
             </h1>
           </div>
 
           <div
             ref={profileImageRef}
-            className="relative w-64 h-80 md:w-[22rem] md:h-[28rem] flex-shrink-0"
+            className="relative ml-12 w-87 h-100 md:w-[28rem] md:h-[28rem] flex-shrink-10"
           >
             <div className="w-full h-full rounded-[3rem] overflow-hidden border-4 border-black shadow-2xl bg-zinc-900 relative group">
               <Image
@@ -185,7 +185,7 @@ export default function Home() {
         {/* === BIO SECTION (TOP) === */}
         <div
           ref={bioSectionRef}
-          className="grid grid-cols-1 md:grid-cols-2 gap-16 mt-12 w-full pb-12"
+          className="grid grid-cols-1 md:grid-cols-2 gap-16 mt-12 w-full pb-6"
         >
           <div className="flex flex-col gap-6 text-black">
             <h2 className="text-4xl font-black uppercase tracking-tighter leading-none">
