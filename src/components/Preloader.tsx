@@ -158,10 +158,10 @@ export default function Preloader() {
       {/* Retro CRT Scanlines & Flicker Overlay */}
       <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_4px,3px_100%] z-[1000] opacity-80"></div>
       
-      <div className="w-full max-w-2xl px-6 flex flex-col justify-between h-[85vh] py-8 z-10">
+      <div className="w-full max-w-2xl px-6 flex flex-col justify-between min-h-[85vh] max-h-[96vh] py-4 md:py-6 z-10 overflow-y-auto scrollbar-none">
         
         {/* Terminal Header */}
-        <div className={`border-b pb-4 opacity-80 text-xs md:text-sm transition-colors duration-500 ${
+        <div className={`border-b pb-3 opacity-80 text-xs md:text-sm transition-colors duration-500 flex-shrink-0 ${
           isPink ? "border-pink-300 text-pink-100" : "border-green-900 text-green-700"
         }`}>
           <p>RIZKY_MAINFRAME v2026.08.22 // {isPink ? "LOVE CONSOLE" : "SECURE CONSOLE"}</p>
@@ -169,11 +169,11 @@ export default function Preloader() {
         </div>
 
         {/* Dynamic Stages */}
-        <div className="flex-1 flex flex-col justify-center my-6 overflow-hidden">
+        <div className="flex-1 flex flex-col justify-center my-3 md:my-4">
           {stage === "input" && (
-            <form ref={formRef} onSubmit={handleStartLoading} className="flex flex-col gap-6 w-full">
-              <div className="space-y-2">
-                <p className={`text-sm md:text-base transition-colors duration-500 ${isPink ? "text-pink-100" : "text-green-400"}`}>
+            <form ref={formRef} onSubmit={handleStartLoading} className="flex flex-col gap-3.5 md:gap-4 w-full">
+              <div className="space-y-1.5">
+                <p className={`text-xs md:text-sm font-bold transition-colors duration-500 ${isPink ? "text-pink-100" : "text-green-400"}`}>
                   <span className={`${isPink ? "text-white" : "text-red-500"} font-bold animate-pulse`}>&gt;</span> PLEASE IDENTIFY YOURSELF:
                 </p>
                 <input
@@ -193,8 +193,8 @@ export default function Preloader() {
               </div>
 
               {/* Instagram Handle Input */}
-              <div className="space-y-2">
-                <p className={`text-sm md:text-base transition-colors duration-500 ${isPink ? "text-pink-100" : "text-green-400"}`}>
+              <div className="space-y-1.5">
+                <p className={`text-xs md:text-sm font-bold transition-colors duration-500 ${isPink ? "text-pink-100" : "text-green-400"}`}>
                   <span className={`${isPink ? "text-white" : "text-green-600"} font-bold`}>&gt;</span> INSTAGRAM:
                 </p>
                 <div className="relative w-full max-w-lg">
@@ -204,7 +204,7 @@ export default function Preloader() {
                     placeholder="username (e.g. your_instagram)"
                     value={instagram}
                     onChange={(e) => setInstagram(e.target.value)}
-                    className={`w-full border-2 rounded pl-8 pr-4 py-2 font-mono outline-none text-base transition-all duration-500 ${
+                    className={`w-full border-2 rounded pl-8 pr-4 py-1.5 font-mono outline-none text-sm md:text-base transition-all duration-500 ${
                       isPink 
                         ? "bg-[#ff558f] border-white text-white placeholder-pink-200 focus:border-pink-100"
                         : "bg-black border-green-900 focus:border-green-500 text-green-400"
@@ -214,14 +214,14 @@ export default function Preloader() {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <p className={`text-sm md:text-base transition-colors duration-500 ${isPink ? "text-pink-100" : "text-green-400"}`}>
+              <div className="space-y-2">
+                <p className={`text-xs md:text-sm font-bold transition-colors duration-500 ${isPink ? "text-pink-100" : "text-green-400"}`}>
                   <span className={isPink ? "text-pink-200" : "text-green-700"}>&gt;</span> CHOOSE CONNECTION CATEGORY:
                   {!role && !hasError && (
                     <span className={`ml-2 text-xs opacity-60 ${isPink ? "text-pink-200" : "text-green-700"}`}>(required)</span>
                   )}
                 </p>
-                <div className="grid grid-cols-2 gap-3 max-w-lg">
+                <div className="grid grid-cols-2 gap-2 md:gap-2.5 max-w-lg">
                   {(["HRD", "FRIEND", "BROTHER", "GUEST", "GIRLFRIEND"] as const).map((r) => (
                     <button
                       key={r}
@@ -229,7 +229,7 @@ export default function Preloader() {
                       onClick={() => { setRole(r); setHasError(false); setErrorMsg(""); }}
                       onMouseEnter={r === "GIRLFRIEND" ? () => setIsHoveredGF(true) : undefined}
                       onMouseLeave={r === "GIRLFRIEND" ? () => setIsHoveredGF(false) : undefined}
-                      className={`border-2 px-3 py-2 text-xs md:text-sm font-black uppercase transition-all duration-300 flex items-center justify-center gap-1.5 ${
+                      className={`border-2 px-3 py-1.5 md:py-2 text-xs md:text-sm font-black uppercase transition-all duration-300 flex items-center justify-center gap-1.5 ${
                         r === "GIRLFRIEND" ? "col-span-2" : ""
                       } ${
                         role === r
@@ -263,14 +263,14 @@ export default function Preloader() {
               <button
                 type="submit"
                 disabled={!name.trim()}
-                className={`mt-4 w-full max-w-lg border-2 font-black py-3 px-6 text-sm uppercase tracking-wider transition-all duration-500 cursor-pointer ${
+                className={`mt-2 md:mt-3 w-full max-w-lg border-2 font-black py-2.5 md:py-3 px-6 text-xs md:text-sm uppercase tracking-wider transition-all duration-500 cursor-pointer ${
                   name.trim()
                     ? isPink
                       ? "bg-white text-[#ff6fa4] border-white shadow-[0_0_15px_rgba(255,255,255,0.7)] hover:bg-[#ff558f] hover:text-white"
                       : "bg-green-500 text-black border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.6)] hover:bg-black hover:text-green-500"
                     : isPink
                     ? "bg-[#ff558f] text-pink-300 border-pink-400 cursor-not-allowed"
-                    : "bg-black text-zinc-800 border-zinc-900 cursor-not-allowed"
+                    : "bg-black text-zinc-600 border-zinc-800 cursor-not-allowed"
                 }`}
               >
                 REQUEST SYSTEM ACCESS
