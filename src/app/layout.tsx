@@ -4,6 +4,13 @@ import Header from "@/components/Header";
 import SmoothScroll from "@/components/Smoothscroll";
 import Preloader from "@/components/Preloader"; // 1. Import preloader-nya
 import Cursor from "@/components/Cursor";
+import { LanguageProvider } from "@/context/LanguageContext";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Rizky Andriyanto | portfolio",
+  description: "Rizky Andriyanto's personal portfolio website specializing in Front-End Web Development.",
+};
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -19,22 +26,24 @@ const bebasNeue = Bebas_Neue({
 
 export default function RootLayout({
   children,
-}: {
+  }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${spaceGrotesk.variable} ${bebasNeue.variable} font-sans antialiased bg-[#e9e4d9]`}
       >
-        <Preloader />
+        <LanguageProvider>
+          <Preloader />
 
-        <Header />
+          <Header />
 
-        <SmoothScroll>
-          <Cursor />
-          {children}
-        </SmoothScroll>
+          <SmoothScroll>
+            <Cursor />
+            {children}
+          </SmoothScroll>
+        </LanguageProvider>
       </body>
     </html>
   );

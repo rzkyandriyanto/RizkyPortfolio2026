@@ -22,6 +22,9 @@ export default function SmoothScroll({
         content: "#smooth-content",
         smooth: 1.9, // Coba naikin dikit biar lebih terasa smooth-nya
         effects: true,
+        normalizeScroll: {
+          allowNestedScroll: true,
+        },
       });
     }, main);
 
