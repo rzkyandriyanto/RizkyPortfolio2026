@@ -1216,16 +1216,13 @@ export default function Home() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-full border border-green-700 overflow-hidden bg-zinc-900 flex-shrink-0 flex items-center justify-center text-[10px]">
-                  {guestInstagram ? (
+                  {guestInstagram || guestName ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
-                      src={`${CF_AVATAR_ENDPOINT}?username=${encodeURIComponent(guestInstagram)}`}
+                      src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(guestInstagram || guestName)}`}
                       alt="Avatar"
                       referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(guestName || "guest")}&backgroundColor=f97316,e11d48,8b5cf6,06b6d4,10b981&textColor=ffffff`;
-                      }}
+                      className="w-full h-full object-cover bg-zinc-950"
                     />
                   ) : (
                     <span>{(guestName || "G").charAt(0).toUpperCase()}</span>
@@ -1357,18 +1354,19 @@ export default function Home() {
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src={comment.avatar_url || `${CF_AVATAR_ENDPOINT}?username=${encodeURIComponent(comment.instagram)}`}
+                            src={comment.avatar_url && comment.avatar_url.startsWith("http") ? comment.avatar_url : `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(comment.instagram)}`}
                             alt={comment.name}
-                            referrerPolicy="no-referrer"
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.currentTarget as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(comment.name)}&backgroundColor=f97316,e11d48,8b5cf6,06b6d4,10b981&textColor=ffffff`;
-                            }}
+                            className="w-full h-full object-cover bg-zinc-950"
                           />
                         </a>
                       ) : (
                         <div className="w-10 h-10 border-2 border-black rounded-full overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-orange-400 flex-shrink-0 flex items-center justify-center font-black text-sm text-black">
-                          <span>{comment.name.charAt(0).toUpperCase()}</span>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(comment.name)}`}
+                            alt={comment.name}
+                            className="w-full h-full object-cover bg-zinc-950"
+                          />
                         </div>
                       )}
 
