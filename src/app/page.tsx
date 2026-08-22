@@ -1223,7 +1223,7 @@ export default function Home() {
                   {guestInstagram ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
-                      src={`/api/instagram-avatar?username=${encodeURIComponent(guestInstagram)}`}
+                      src={`/api/instagram-avatar?username=${encodeURIComponent(guestInstagram)}&v=2`}
                       alt="Avatar"
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
@@ -1361,7 +1361,7 @@ export default function Home() {
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src={`/api/instagram-avatar?username=${encodeURIComponent(comment.instagram)}`}
+                            src={`/api/instagram-avatar?username=${encodeURIComponent(comment.instagram)}&v=2`}
                             alt={comment.name}
                             referrerPolicy="no-referrer"
                             className="w-full h-full object-cover"
