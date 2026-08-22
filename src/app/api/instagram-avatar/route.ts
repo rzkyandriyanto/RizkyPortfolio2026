@@ -24,13 +24,23 @@ export async function GET(request: NextRequest) {
 
       if (res.ok) {
         const html = await res.text();
-        const match =
-          html.match(/content="([^"]+cdninstagram\.com[^"]+)"/i) ||
-          html.match(/property="og:image"\s+content="([^"]+)"/i) ||
-          html.match(/content="([^"]+)"\s+property="og:image"/i);
+        // Extract direct Instagram CDN profile picture URL
+        const urlMatches = html.match(/https:\/\/[^"'\s\\<>]*cdninstagram\.com\/v\/[^"'\s\\<>]*/gi);
+        if (urlMatches && urlMatches.length > 0) {
+          const picUrl = urlMatches.find((m) => !m.includes("rsrc.php"));
+          if (picUrl) {
+            profilePicUrl = picUrl.replace(/&amp;/g, "&").replace(/\\u0026/g, "&");
+          }
+        }
 
-        if (match && match[1]) {
-          profilePicUrl = match[1].replace(/&amp;/g, "&");
+        if (!profilePicUrl) {
+          const match =
+            html.match(/content="([^"]+cdninstagram\.com[^"]+)"/i) ||
+            html.match(/property="og:image"\s+content="([^"]+)"/i) ||
+            html.match(/content="([^"]+)"\s+property="og:image"/i);
+          if (match && match[1]) {
+            profilePicUrl = match[1].replace(/&amp;/g, "&").replace(/\\u0026/g, "&");
+          }
         }
       }
     } catch {
