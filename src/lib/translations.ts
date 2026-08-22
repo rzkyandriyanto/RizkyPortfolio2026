@@ -52,7 +52,7 @@ export const translations = {
 
     // Internship
     intern_header: "Internship",
-    intern1_title: "PT Segara Lantera Teknologi",
+    intern1_title: "PT Segara Lentera Teknologi",
     intern1_role: "Web Development — Intern",
     intern1_loc: "South Jakarta",
     intern1_date: "March 2025 – Present",
@@ -77,6 +77,8 @@ export const translations = {
     proj_more_coming: "More Coming Soon",
     graphic_proj1_desc: "Illustration 'Dudul Anak Baik'. Cute and friendly character design with a signature neobrutalism visual style.",
     graphic_proj2_desc: "Creative photo manipulation with dynamic color grading to create an expressive artistic nuance.",
+    motion_proj1_title: "Kinetic Motion & Micro-Animations",
+    motion_proj1_desc: "Dynamic motion graphics and micro-interactions created with After Effects and GSAP to deliver lively, engaging web experiences.",
 
     // Education
     edu_header: "Education & Certifications",
@@ -173,7 +175,7 @@ export const translations = {
 
     // Internship
     intern_header: "Magang",
-    intern1_title: "PT Segara Lantera Teknologi",
+    intern1_title: "PT Segara Lentera Teknologi",
     intern1_role: "Web Development — Magang",
     intern1_loc: "Jakarta Selatan",
     intern1_date: "Maret 2025 – Sekarang",
@@ -198,6 +200,8 @@ export const translations = {
     proj_more_coming: "Lebih Banyak Segera Hadir",
     graphic_proj1_desc: "Ilustrasi 'Dudul Anak Baik'. Desain karakter imut dan ramah dengan gaya visual neobrutalisme yang khas.",
     graphic_proj2_desc: "Manipulasi foto kreatif dengan color grading yang dinamis untuk menciptakan nuansa seni yang ekspresif.",
+    motion_proj1_title: "Kinetic Motion & Micro-Animations",
+    motion_proj1_desc: "Motion graphic dan mikro-animasi dinamis yang dibuat dengan After Effects dan GSAP untuk menghadirkan pengalaman web yang hidup dan berkesan.",
 
     // Education
     edu_header: "Pendidikan & Sertifikasi",

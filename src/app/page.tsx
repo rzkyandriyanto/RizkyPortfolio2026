@@ -9,6 +9,8 @@ import CometCard from "../components/ui/CometCard";
 import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../context/LanguageContext";
+import CharacterCustomizerModal from "../components/CharacterCustomizerModal";
+import { TechIcon } from "../components/TechIcons";
 
 // Register Plugin GSAP
 gsap.registerPlugin(ScrollTrigger);
@@ -38,11 +40,11 @@ function InstagramVerifiedBadge() {
     >
       <title>Verified Instagram Account</title>
       <path
-        d="M19.998 3.333c1.472 0 2.855.702 3.725 1.89l.865 1.18c.55.751 1.408 1.222 2.336 1.284l1.46.096c1.468.098 2.76.992 3.42 2.368l.654 1.365c.414.865 1.18 1.496 2.083 1.716l1.423.348c1.433.35 2.518 1.542 2.871 2.997l.35 1.444c.221.912.834 1.674 1.69 2.072l1.35.626c1.361.63 2.22 1.954 2.272 3.454l.051 1.487c.032.937.478 1.808 1.214 2.378l1.162.902c1.173.91 1.677 2.457 1.302 3.89l-.37 1.417c-.234.899-.066 1.863.456 2.624l.824 1.202c.83 1.21 .862 2.805.083 4.047l-.771 1.23c-.49.782-.619 1.734-.351 2.613l.422 1.385c.427 1.404.015 2.923-1.077 3.918l-1.08 1.002c-.686.637-.998 1.564-.852 2.484l.23 1.45c.234 1.475-.544 2.907-1.957 3.597l-1.399.684c-.886.434-1.472 1.265-1.597 2.234l-.197 1.528c-.198 1.536-1.378 2.73-2.964 2.997l-1.569.263c-.994.167-1.785.836-2.146 1.815l-.57 1.548c-.563 1.532-2.007 2.463-3.626 2.336l-1.601-.125c-1.015-.079-1.97.35-2.593 1.164l-.984 1.285c-.974 1.272-2.618 1.79-4.128 1.298l-1.493-.487c-.947-.309-1.978-.141-2.793.456l-1.289.94c-1.276.932-2.98.922-4.246-.025l-1.252-.937c-.792-.593-1.823-.761-2.77-.452l-1.493.487c-1.51.492-3.154-.026-4.128-1.298l-.984-1.285c-.623-.814-1.578-1.243-2.593-1.164l-1.601.125c-1.619.127-3.063-.804-3.626-2.336l-.57-1.548c-.361-.979-1.152-1.648-2.146-1.815l-1.569-.263c-1.586-.267-2.766-1.461-2.964-2.997l-.197-1.528c-.125-.969-.711-1.8-1.597-2.234l-1.399-.684c-1.413-.69-2.191-2.122-1.957-3.597l.23-1.45c.146-.92-.166-1.847-.852-2.484l-1.08-1.002c-1.092-.995-1.504-2.514-1.077-3.918l.422-1.385c.268-.879.139-1.831-.351-2.613l-.771-1.23c-.779-1.242-.747-2.837.083-4.047l.824-1.202c.522-.761.69-1.725.456-2.624l-.37-1.417c-.375-1.433.129-2.98 1.302-3.89l1.162-.902c.736-.57 1.182-1.441 1.214-2.378l.051-1.487c.052-1.5.911-2.824 2.272-3.454l1.35-.626c.856-.398 1.469-1.16 1.69-2.072l.35-1.444c.353-1.455 1.438-2.647 2.871-2.997l1.423-.348c.903-.22 1.669-.851 2.083-1.716l.654-1.365c.66-1.376 1.952-2.27 3.42-2.368l1.46-.096c.928-.062 1.786-.533 2.336-1.284l.865-1.18c.87-1.188 2.253-1.89 3.725-1.89z"
+        d="M19.998 3.333c-9.204 0-16.665 7.462-16.665 16.667 0 9.204 7.461 16.667 16.665 16.667 9.206 0 16.669-7.463 16.669-16.667 0-9.205-7.463-16.667-16.669-16.667z"
         fill="#0095F6"
       />
       <path
-        d="M17.435 27.654l-6.089-6.09 2.122-2.121 3.967 3.967 8.967-8.967 2.121 2.121-11.088 11.09z"
+        d="M16.924 26.667l-6.19-6.19 2.357-2.357 3.833 3.833 8.833-8.833 2.357 2.357-11.19 11.19z"
         fill="#FFFFFF"
       />
     </svg>
@@ -58,11 +60,10 @@ export default function Home() {
   const projectsHeaderRef = useRef<HTMLDivElement>(null);
   const projectCardsRef = useRef<HTMLDivElement[]>([]);
   const workExperienceRef = useRef<HTMLDivElement>(null);
-  const internshipRef = useRef<HTMLDivElement>(null);
   const skillsSectionRef = useRef<HTMLDivElement>(null);
   const educationSectionRef = useRef<HTMLDivElement>(null);
   const contactSectionRef = useRef<HTMLDivElement>(null);
-  const animeBoxRef = useRef(null);
+  const animeBoxRef = useRef<HTMLDivElement>(null);
   const transitionOverlayRef = useRef<HTMLDivElement>(null);
 
   // State lightbox untuk design graphic
@@ -70,13 +71,15 @@ export default function Home() {
   const [lightboxAlt, setLightboxAlt] = useState<string>("");
 
   // State activeTab untuk Kategori Project Work
-  const [activeTab, setActiveTab] = useState<"web" | "graphic" | "uiux">("web");
+  const [activeTab, setActiveTab] = useState<"web" | "graphic" | "uiux" | "motion">("web");
 
   // State untuk Guestbook / Komentar Pengunjung
   const [comments, setComments] = useState<GuestComment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [guestName, setGuestName] = useState("");
   const [guestInstagram, setGuestInstagram] = useState("");
+  const [guestCustomAvatar, setGuestCustomAvatar] = useState<string>("");
+  const [isCharacterModalOpen, setIsCharacterModalOpen] = useState(false);
   const [rating, setRating] = useState<number>(10);
   const [guestRole, setGuestRole] = useState<"HRD" | "FRIEND" | "BROTHER" | "GUEST" | "GIRLFRIEND" | "OWNER">("GUEST");
 
@@ -92,9 +95,11 @@ export default function Home() {
       const savedName = detail?.name || localStorage.getItem("guest_name");
       const savedIg = detail?.instagram !== undefined ? detail?.instagram : localStorage.getItem("guest_instagram");
       const savedRole = detail?.role || (localStorage.getItem("guest_role") as GuestComment["role"]);
+      const savedCustomAvatar = localStorage.getItem("guest_custom_avatar");
       if (savedName) setGuestName(savedName);
       if (savedIg !== null && savedIg !== undefined) setGuestInstagram(savedIg);
       if (savedRole) setGuestRole(savedRole);
+      if (savedCustomAvatar) setGuestCustomAvatar(savedCustomAvatar);
     };
 
     syncGuestAuth();
@@ -129,7 +134,13 @@ export default function Home() {
                 id: item.id.toString(),
                 name: item.name,
                 instagram: item.instagram || undefined,
-                avatar_url: item.avatar_url || (item.instagram ? `${CF_AVATAR_ENDPOINT}?username=${encodeURIComponent(item.instagram)}` : undefined),
+                avatar_url: item.avatar_url && !item.avatar_url.includes("workers.dev") 
+                  ? item.avatar_url 
+                  : (item.role === "OWNER" || item.name.toLowerCase().includes("rizky")
+                    ? "/images/pixel-cat-owner.svg"
+                    : (item.name.toLowerCase().includes("lida")
+                      ? "https://api.dicebear.com/7.x/pixel-art/svg?hair=long01&hairProbability=100&hatProbability=0&hairColor=090909&accessories=variant03&accessoriesProbability=100&glassesProbability=0&skinColor=e0a38b&backgroundColor=e11d48"
+                      : `https://api.dicebear.com/7.x/pixel-art/svg?hair=short02&hairProbability=100&hatProbability=0&hairColor=090909&skinColor=e0a38b&backgroundColor=f97316&seed=${encodeURIComponent(item.instagram || item.name)}`)),
                 isVerified: !!item.is_verified || !!item.isVerified,
                 isPinned: !!item.is_pinned || !!item.isPinned,
                 rating: item.rating !== null && item.rating !== undefined ? Number(item.rating) : undefined,
@@ -169,9 +180,24 @@ export default function Home() {
     };
   }, []);
 
-  const handlePostComment = async (e: React.FormEvent) => {
+  const handleOpenCharacterCustomizer = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
+
+    // Owner permanen adalah Kucing Pixel 🐱🕶️
+    if (guestRole === "OWNER") {
+      handleConfirmCommentWithAvatar("/images/pixel-cat-owner.svg");
+      return;
+    }
+
+    setIsCharacterModalOpen(true);
+  };
+
+  const handleConfirmCommentWithAvatar = async (chosenAvatarUrl: string) => {
+    setIsCharacterModalOpen(false);
+    if (!newComment.trim()) return;
+
+    setGuestCustomAvatar(chosenAvatarUrl);
 
     const authorName = guestName || "Anonymous Visitor";
     const authorRole = guestRole || "GUEST";
@@ -179,9 +205,7 @@ export default function Home() {
     const isVerifiedAccount = cleanIg ? ["prabowo", "aniesbaswedan", "ganjar_pranowo", "windahbasudara", "bahlillahadalia", "ybrap"].includes(cleanIg.toLowerCase()) : false;
     const tempId = Date.now().toString();
 
-    const avatarUrl = cleanIg
-      ? `${CF_AVATAR_ENDPOINT}?username=${encodeURIComponent(cleanIg)}`
-      : undefined;
+    const avatarUrl = chosenAvatarUrl;
 
     const newCommentObj: GuestComment = {
       id: tempId,
@@ -296,16 +320,50 @@ export default function Home() {
         gsap.set(photo, { transformOrigin: "center center" });
       }
 
-      // Mulai timeline dengan memudarkan overlay transisi hitam (Gelap -> Terang)
+      // === GLITCH TRANSITION: GELAP KE TERANG (CRT POWER-UP & MALFUNCTION SPARK) ===
+      // 1. Initial dark overlay with sudden electrical flashes and RGB tear
       tl.to(transitionOverlayRef.current, {
+        opacity: 0.25,
+        filter: "invert(1) contrast(2) brightness(2.5)",
+        duration: 0.09,
+        ease: "none",
+      })
+      .to(transitionOverlayRef.current, {
+        opacity: 0.95,
+        filter: "drop-shadow(-10px 0 0 #00ffff) drop-shadow(10px 0 0 #ff0055) brightness(1.8)",
+        duration: 0.08,
+        ease: "none",
+      })
+      // 2. Micro blackout (sinyal drop sesaat)
+      .to(transitionOverlayRef.current, {
+        opacity: 1,
+        filter: "none",
+        duration: 0.15,
+        ease: "none",
+      })
+      // 3. Second powerful phosphor burst
+      .to(transitionOverlayRef.current, {
+        opacity: 0.15,
+        filter: "invert(1) brightness(3.5) contrast(2)",
+        duration: 0.12,
+        ease: "none",
+      })
+      .to(transitionOverlayRef.current, {
+        opacity: 0.7,
+        filter: "drop-shadow(8px 0 0 #00ff66) drop-shadow(-8px 0 0 #ff00ff)",
+        duration: 0.09,
+      })
+      // 4. Final smooth cinematic reveal into the bright portfolio page
+      .to(transitionOverlayRef.current, {
         opacity: 0,
-        duration: 1.2,
+        filter: "none",
+        duration: 1.8,
         ease: "power2.inOut",
         onComplete: () => {
           if (transitionOverlayRef.current) {
             transitionOverlayRef.current.style.display = "none";
           }
-        }
+        },
       })
         .from(nameContainerRef.current, {
           y: 100,
@@ -349,29 +407,79 @@ export default function Home() {
       });
 
       // --- 3. ANIMASI NYAN CAT (Meluncur dari Kiri ke Tengah) ---
-      gsap.from(animeBoxRef.current, {
-        x: -800, // Mulai dari luar layar kiri
-        opacity: 0,
-        duration: 2, // Durasi meluncur
-        ease: "power4.out",
-        scrollTrigger: {
-          trigger: animeBoxRef.current,
-          start: "top 90%",
-          toggleActions: "play none none reverse",
-        },
-      });
+      const nyanImg = animeBoxRef.current?.querySelector(".nyan-cat-img");
+      if (nyanImg) {
+        gsap.from(nyanImg, {
+          x: -600,
+          opacity: 0,
+          duration: 1.6,
+          ease: "power4.out",
+          scrollTrigger: {
+            trigger: animeBoxRef.current,
+            start: "top 90%",
+            toggleActions: "play none none reverse",
+          },
+        });
+      }
 
-      // --- 4. ANIMASI SCROLL: BIO NARRATIVE ---
-      gsap.from(bioNarrativeRef.current, {
-        y: 60,
-        opacity: 0,
-        duration: 1.2,
-        ease: "power4.out",
-        scrollTrigger: {
-          trigger: bioNarrativeRef.current,
-          start: "top 80%",
-        },
-      });
+      // --- 3.1 ANIMASI SCROLL: LETS CRAFT TEXT (Word Highlighter + 3D Kinetic Lift) ---
+      const craftContainer = animeBoxRef.current?.querySelector(".lets-craft-text");
+      const craftWords = animeBoxRef.current?.querySelectorAll(".craft-word");
+      if (craftContainer && craftWords && craftWords.length > 0) {
+        gsap.fromTo(
+          craftWords,
+          {
+            opacity: 0.15,
+            y: 25,
+            scale: 0.9,
+            rotateX: -20,
+          },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            rotateX: 0,
+            stagger: 0.08,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: craftContainer,
+              start: "top 90%",
+              end: "top 45%",
+              scrub: 0.8,
+            },
+          }
+        );
+      }
+
+      // --- 4. ANIMASI SCROLL: BIO NARRATIVE (Word Highlighter + Kinetic 3D Lift) ---
+      if (bioNarrativeRef.current) {
+        const words = bioNarrativeRef.current.querySelectorAll(".philosophy-word");
+        if (words.length > 0) {
+          gsap.fromTo(
+            words,
+            {
+              opacity: 0.15,
+              y: 20,
+              scale: 0.93,
+              rotateX: -15,
+            },
+            {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              rotateX: 0,
+              stagger: 0.05,
+              ease: "power2.out",
+              scrollTrigger: {
+                trigger: bioNarrativeRef.current,
+                start: "top 80%",
+                end: "bottom 45%",
+                scrub: 0.75,
+              },
+            }
+          );
+        }
+      }
 
       // --- 5. ANIMASI SCROLL: PROJECTS ---
       gsap.from(projectsHeaderRef.current, {
@@ -389,15 +497,6 @@ export default function Home() {
         duration: 0.8,
         ease: "back.out(1.7)",
         scrollTrigger: { trigger: workExperienceRef.current, start: "top 85%" },
-      });
-
-      // --- 7. ANIMASI SCROLL: INTERNSHIP ---
-      gsap.from(internshipRef.current, {
-        scale: 0.9,
-        opacity: 0,
-        duration: 0.8,
-        ease: "back.out(1.7)",
-        scrollTrigger: { trigger: internshipRef.current, start: "top 85%" },
       });
 
       // --- 8. ANIMASI SCROLL: SKILLS ---
@@ -434,7 +533,7 @@ export default function Home() {
     });
 
     return () => ctx.revert();
-  }, []);
+  }, [language]);
 
   return (
     <main className="min-h-screen px-6 md:px-16 pt-40 md:pt-42 pb-20 overflow-hidden bg-grid font-space-grotesk text-black">
@@ -544,45 +643,168 @@ export default function Home() {
             {t("bio_philosophy_label")}
           </div>
           {language === "en" ? (
-            <p className="text-3xl md:text-5xl font-bold leading-[1.1] tracking-tight italic">
-              &quot;My journey in tech ignited in 2023, evolving into a relentless
-              mission to build work that truly resonates. As a{" "}
-              <span className="text-orange-500 not-italic font-black underline decoration-8 underline-offset-4">
-                Creative Developer
+            <p className="text-3xl md:text-5xl font-bold leading-[1.25] tracking-tight italic select-none">
+              <span className="philosophy-word inline-block mr-[0.25em]">&quot;My</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">journey</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">in</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">tech</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">ignited</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">in</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">2023,</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">evolving</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">into</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">a</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">relentless</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">mission</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">to</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">build</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">work</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">that</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">truly</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">resonates.</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">As</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">a</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">
+                <span className="text-orange-500 not-italic font-black underline decoration-8 underline-offset-4">
+                  Creative
+                </span>
               </span>
-              , I breathe life into static designs through fluid animations and
-              immersive user flows. I bridge the gap between{" "}
-              <span className="text-blue-400 not-italic font-black">
-                striking aesthetics
-              </span>{" "}
-              and{" "}
-              <span className="bg-black text-[#e9e4d9] px-2 not-italic">
-                flawless performance
+              <span className="philosophy-word inline-block mr-[0.25em]">
+                <span className="text-orange-500 not-italic font-black underline decoration-8 underline-offset-4">
+                  Developer
+                </span>
+                ,
               </span>
-              , constantly pushing the limits of what&apos;s possible on the web.&quot;
+              <span className="philosophy-word inline-block mr-[0.25em]">I</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">breathe</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">life</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">into</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">static</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">designs</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">through</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">fluid</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">animations</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">and</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">immersive</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">user</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">flows.</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">I</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">bridge</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">the</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">gap</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">between</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">
+                <span className="text-blue-400 not-italic font-black">
+                  striking
+                </span>
+              </span>
+              <span className="philosophy-word inline-block mr-[0.25em]">
+                <span className="text-blue-400 not-italic font-black">
+                  aesthetics
+                </span>
+              </span>
+              <span className="philosophy-word inline-block mr-[0.25em]">and</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">
+                <span className="bg-black text-[#e9e4d9] px-2 not-italic shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  flawless performance
+                </span>
+                ,
+              </span>
+              <span className="philosophy-word inline-block mr-[0.25em]">constantly</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">pushing</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">the</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">limits</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">of</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">what&apos;s</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">possible</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">on</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">the</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">web.&quot;</span>
             </p>
           ) : (
-            <p className="text-3xl md:text-5xl font-bold leading-[1.1] tracking-tight italic">
-              &quot;Perjalanan saya di dunia teknologi dimulai pada tahun 2023, berkembang
-              menjadi misi tanpa henti untuk membangun karya yang benar-benar berkesan. Sebagai{" "}
-              <span className="text-orange-500 not-italic font-black underline decoration-8 underline-offset-4">
-                Developer Kreatif
+            <p className="text-3xl md:text-5xl font-bold leading-[1.25] tracking-tight italic select-none">
+              <span className="philosophy-word inline-block mr-[0.25em]">&quot;Perjalanan</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">saya</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">di</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">dunia</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">teknologi</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">dimulai</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">pada</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">tahun</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">2023,</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">berkembang</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">menjadi</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">misi</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">tanpa</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">henti</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">untuk</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">membangun</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">karya</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">yang</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">benar-benar</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">berkesan.</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">Sebagai</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">
+                <span className="text-orange-500 not-italic font-black underline decoration-8 underline-offset-4">
+                  Developer
+                </span>
               </span>
-              , saya menghidupkan desain statis melalui animasi yang mengalir dan
-              alur pengguna yang imersif. Saya menjembatani celah antara{" "}
-              <span className="text-blue-400 not-italic font-black">
-                estetika yang memukau
-              </span>{" "}
-              dan{" "}
-              <span className="bg-black text-[#e9e4d9] px-2 not-italic">
-                performa yang sempurna
+              <span className="philosophy-word inline-block mr-[0.25em]">
+                <span className="text-orange-500 not-italic font-black underline decoration-8 underline-offset-4">
+                  Kreatif
+                </span>
+                ,
               </span>
-              , terus mendobrak batas dari apa yang mungkin dilakukan di web.&quot;
+              <span className="philosophy-word inline-block mr-[0.25em]">saya</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">menghidupkan</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">desain</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">statis</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">melalui</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">animasi</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">yang</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">mengalir</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">dan</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">alur</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">pengguna</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">yang</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">imersif.</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">Saya</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">menjembatani</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">celah</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">antara</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">
+                <span className="text-blue-400 not-italic font-black">
+                  estetika
+                </span>
+              </span>
+              <span className="philosophy-word inline-block mr-[0.25em]">
+                <span className="text-blue-400 not-italic font-black">
+                  yang memukau
+                </span>
+              </span>
+              <span className="philosophy-word inline-block mr-[0.25em]">dan</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">
+                <span className="bg-black text-[#e9e4d9] px-2 not-italic shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  performa yang sempurna
+                </span>
+                ,
+              </span>
+              <span className="philosophy-word inline-block mr-[0.25em]">terus</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">mendobrak</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">batas</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">dari</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">apa</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">yang</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">mungkin</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">dilakukan</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">di</span>
+              <span className="philosophy-word inline-block mr-[0.25em]">web.&quot;</span>
             </p>
           )}
         </div>
       </section>
 
+      {/* ===================================================== */}
       {/* ===================================================== */}
       {/* === WORK EXPERIENCE SECTION === */}
       {/* ===================================================== */}
@@ -595,7 +817,46 @@ export default function Home() {
         </div>
         <div className="flex flex-col gap-8">
 
-          {/* Job 1 */}
+          {/* 1. PT Segara Lentera Teknologi (Web Development Intern - TECH PRIORITY #1) */}
+          <div className="scroll-card-reveal border-2 border-black p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all duration-300 bg-white relative">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 mb-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[10px] font-black uppercase tracking-widest bg-orange-500 text-black px-2 py-0.5 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+                    TECH / WEB DEV
+                  </span>
+                </div>
+                <h3 className="text-xl font-black uppercase tracking-tight">{t("intern1_title")}</h3>
+                <p className="text-base font-bold text-blue-500 uppercase">{t("intern1_role")}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-black uppercase tracking-widest opacity-50">{t("intern1_loc")}</p>
+                <p className="text-sm font-bold opacity-50">{t("intern1_date")}</p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-3 text-sm font-medium opacity-90">
+              <div className="border-l-4 border-blue-400 pl-4">
+                {t("intern1_bullet1")}
+              </div>
+              <div className="border-l-4 border-blue-400 pl-4">
+                {t("intern1_bullet2")}
+              </div>
+              <div className="border-l-4 border-blue-400 pl-4">
+                {t("intern1_bullet3")}
+              </div>
+              <div className="border-l-4 border-blue-400 pl-4">
+                {t("intern1_bullet4")}
+              </div>
+              <div className="border-l-4 border-blue-400 pl-4">
+                {t("intern1_bullet5")}
+              </div>
+              <div className="border-l-4 border-blue-400 pl-4">
+                {t("intern1_bullet6")}
+              </div>
+            </div>
+          </div>
+
+          {/* 2. PT Sumber Alfaria Trijaya (Crew Store) */}
           <div className="scroll-card-reveal border-2 border-black p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all duration-300 bg-white">
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 mb-4">
               <div>
@@ -640,7 +901,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Job 2 */}
+          {/* 3. Wendy's (Service Crew) */}
           <div className="scroll-card-reveal border-2 border-black p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all duration-300 bg-white">
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 mb-4">
               <div>
@@ -671,50 +932,6 @@ export default function Home() {
       </section>
 
       {/* ===================================================== */}
-      {/* === INTERNSHIP SECTION === */}
-      {/* ===================================================== */}
-      <section id="internship" ref={internshipRef} className="w-full mb-16 scroll-mt-24">
-        <div className="flex items-center gap-4 mb-10">
-          <div className="inline-block px-6 py-2 border-2 border-black rounded-full text-sm font-black uppercase tracking-widest bg-orange-500 text-black shadow-[5px_4px_0px_0px_rgba(0,0,0,1)]">
-            {t("intern_header")}
-          </div>
-          <div className="flex-1 h-[3px] bg-black"></div>
-        </div>
-        <div className="scroll-card-reveal border-2 border-black p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all duration-300 bg-white">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 mb-4">
-            <div>
-              <h3 className="text-xl font-black uppercase tracking-tight">{t("intern1_title")}</h3>
-              <p className="text-base font-bold text-blue-500 uppercase">{t("intern1_role")}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm font-black uppercase tracking-widest opacity-50">{t("intern1_loc")}</p>
-              <p className="text-sm font-bold opacity-50">{t("intern1_date")}</p>
-            </div>
-          </div>
-          <div className="flex flex-col gap-3 text-sm font-medium opacity-90">
-            <div className="border-l-4 border-blue-400 pl-4">
-              {t("intern1_bullet1")}
-            </div>
-            <div className="border-l-4 border-blue-400 pl-4">
-              {t("intern1_bullet2")}
-            </div>
-            <div className="border-l-4 border-blue-400 pl-4">
-              {t("intern1_bullet3")}
-            </div>
-            <div className="border-l-4 border-blue-400 pl-4">
-              {t("intern1_bullet4")}
-            </div>
-            <div className="border-l-4 border-blue-400 pl-4">
-              {t("intern1_bullet5")}
-            </div>
-            <div className="border-l-4 border-blue-400 pl-4">
-              {t("intern1_bullet6")}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ===================================================== */}
       {/* === SKILLS SECTION === */}
       {/* ===================================================== */}
       <section id="skills" ref={skillsSectionRef} className="w-full mb-16 scroll-mt-24">
@@ -727,34 +944,97 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
           {/* Soft Skills */}
-          <div className="border-2 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-orange-50">
-            <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40 mb-4">Soft Skills</p>
-            <div className="flex flex-wrap gap-2">
-              {["Analytical Thinking", "Empathy", "Diplomacy", "Komunikasi", "Open-mindedness", "Responsibility", "Leadership", "Research", "Adaptability", "Visionary", "Critical Thinking", "Curiosity", "Time Management"].map((s) => (
-                <span key={s} className="scroll-badge-reveal px-3 py-1 border-2 border-black text-xs font-bold bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-orange-500 hover:text-black transition-colors duration-200">
-                  {s === "Komunikasi" ? t("skills_comm") : s}
-                </span>
-              ))}
+          <div className="border-2 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-orange-50 flex flex-col justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40 mb-4">Soft Skills</p>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  "Analytical Thinking",
+                  "Empathy",
+                  "Diplomacy",
+                  "Komunikasi",
+                  "Open-mindedness",
+                  "Responsibility",
+                  "Leadership",
+                  "Research",
+                  "Adaptability",
+                  "Visionary",
+                  "Critical Thinking",
+                  "Curiosity",
+                  "Time Management"
+                ].map((s) => (
+                  <span
+                    key={s}
+                    className="scroll-badge-reveal px-3 py-1.5 border-2 border-black text-xs font-bold bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-orange-500 hover:text-black hover:-translate-y-0.5 transition-all duration-150 select-none cursor-default"
+                  >
+                    {s === "Komunikasi" ? t("skills_comm") : s}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
           {/* Hard Skills */}
-          <div className="border-2 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-blue-50">
-            <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40 mb-4">Hard Skills</p>
-            <div className="flex flex-wrap gap-2">
-              {["HTML", "CSS", "JavaScript", "TypeScript", "React", "Next.js", "Vue.js", "Node.js", "Angular", "MySQL", "SQLite", "UI/UX Design", "Mobile Analytics", "Website Analytics"].map((s) => (
-                <span key={s} className="scroll-badge-reveal px-3 py-1 border-2 border-black text-xs font-bold bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-blue-400 hover:text-black transition-colors duration-200">{s}</span>
-              ))}
+          <div className="border-2 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-blue-50 flex flex-col justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40 mb-4">Hard Skills</p>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  "HTML",
+                  "CSS",
+                  "JavaScript",
+                  "TypeScript",
+                  "React",
+                  "Next.js",
+                  "Vue.js",
+                  "Node.js",
+                  "Angular",
+                  "MySQL",
+                  "SQLite",
+                  "UI/UX Design",
+                  "Mobile Analytics",
+                  "Website Analytics"
+                ].map((s) => (
+                  <span
+                    key={s}
+                    className="scroll-badge-reveal inline-flex items-center gap-1.5 px-3 py-1.5 border-2 border-black text-xs font-bold bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-blue-400 hover:text-black hover:-translate-y-0.5 transition-all duration-150 select-none cursor-default"
+                  >
+                    <TechIcon name={s} className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span>{s}</span>
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
           {/* Software Skills */}
-          <div className="border-2 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-zinc-50">
-            <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40 mb-4">Software Skills</p>
-            <div className="flex flex-wrap gap-2">
-              {["VS Code", "Postman", "GitHub", "Git", "Figma", "Adobe XD", "After Effects", "Affinity Designer", "Framer", "Tableau", "Digital Illustration", "Color Grading"].map((s) => (
-                <span key={s} className="scroll-badge-reveal px-3 py-1 border-2 border-black text-xs font-bold bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-black hover:text-white transition-colors duration-200">{s}</span>
-              ))}
+          <div className="border-2 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-zinc-50 flex flex-col justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40 mb-4">Software Skills</p>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  "VS Code",
+                  "Postman",
+                  "GitHub",
+                  "Git",
+                  "Figma",
+                  "Adobe XD",
+                  "After Effects",
+                  "Affinity Designer",
+                  "Framer",
+                  "Tableau",
+                  "Digital Illustration",
+                  "Color Grading"
+                ].map((s) => (
+                  <span
+                    key={s}
+                    className="scroll-badge-reveal inline-flex items-center gap-1.5 px-3 py-1.5 border-2 border-black text-xs font-bold bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-amber-300 hover:text-black hover:-translate-y-0.5 transition-all duration-150 select-none cursor-default"
+                  >
+                    <TechIcon name={s} className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span>{s}</span>
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -787,6 +1067,13 @@ export default function Home() {
                 }`}
             >
               Graphic Design
+            </button>
+            <button
+              onClick={() => setActiveTab("motion")}
+              className={`px-4 py-2 border-2 border-black text-xs font-black uppercase tracking-wider transition-all duration-150 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] cursor-pointer ${activeTab === "motion" ? "bg-purple-400 text-black" : "bg-white text-black hover:bg-zinc-100"
+                }`}
+            >
+              Motion Graphic
             </button>
             <button
               onClick={() => setActiveTab("uiux")}
@@ -974,6 +1261,43 @@ export default function Home() {
             </>
           )}
 
+          {/* ── MOTION GRAPHIC TAB CONTENT ── */}
+          {activeTab === "motion" && (
+            <>
+              {/* Motion Project 1: Kinetic Motion & Micro-Animations */}
+              <div
+                className="flex-shrink-0 w-[300px] md:w-[380px] snap-start border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-2 transition-all duration-300 flex flex-col"
+              >
+                <div className="relative w-full h-[220px] border-b-2 border-black overflow-hidden bg-zinc-950 flex items-center justify-center p-4">
+                  <Image
+                    src="/Animations.gif"
+                    alt="Motion Graphics Showcase"
+                    fill
+                    className="object-contain p-2"
+                    unoptimized
+                  />
+                  <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 bg-purple-400 border-2 border-black text-[10px] font-black uppercase pointer-events-none">
+                    Motion
+                  </div>
+                </div>
+                <div className="p-5 flex flex-col gap-3 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-base font-black uppercase tracking-tight leading-tight">{t("motion_proj1_title")}</h3>
+                    <span className="flex-shrink-0 text-xs font-black px-2 py-1 bg-purple-400 border-2 border-black">#01</span>
+                  </div>
+                  <p className="text-sm font-medium opacity-70 leading-relaxed flex-1">
+                    {t("motion_proj1_desc")}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {["After Effects", "GSAP", "2D Animation"].map((t) => (
+                      <span key={t} className="text-[10px] font-black uppercase px-2 py-0.5 border-2 border-black bg-zinc-100">{t}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
           {/* ── UI/UX TAB CONTENT ── */}
           {activeTab === "uiux" && (
             <div className="flex-shrink-0 w-[300px] md:w-[380px] snap-start border-2 border-dashed border-black bg-white p-12 flex flex-col justify-center items-center gap-2 text-center my-2">
@@ -1152,12 +1476,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* === KOTAK ANIME (NYAN CAT) === */}
+      {/* === KOTAK ANIME (NYAN CAT + CALL TO ACTION) === */}
       <div
         ref={animeBoxRef}
-        className="mt-2 mb-20 w-full max-w-2xl mx-auto flex flex-col justify-center items-center gap-6"
+        className="mt-2 mb-20 w-full max-w-3xl mx-auto flex flex-col justify-center items-center gap-6"
       >
-        <div className="relative w-full h-[300px] md:h-[450px]">
+        <div className="nyan-cat-img relative w-full h-[280px] md:h-[420px]">
           <Image
             src="/Animations.gif"
             alt="Nyan Cat"
@@ -1166,8 +1490,14 @@ export default function Home() {
             unoptimized
           />
         </div>
-        <div className="lets-craft-text font-bebas-neue text-4xl text-orange-500 tracking-wider uppercase text-center">
-          Let&apos;s craft something unforgettable together.
+        <div className="lets-craft-text font-bebas-neue text-4xl md:text-6xl text-orange-500 tracking-wider uppercase text-center select-none flex flex-wrap justify-center items-center gap-x-3 gap-y-1 px-4">
+          <span className="craft-word inline-block">Let&apos;s</span>
+          <span className="craft-word inline-block">craft</span>
+          <span className="craft-word inline-block">something</span>
+          <span className="craft-word inline-block text-black bg-amber-300 px-3 py-0.5 border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+            unforgettable
+          </span>
+          <span className="craft-word inline-block">together.</span>
         </div>
       </div>
 
@@ -1216,10 +1546,17 @@ export default function Home() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-full border border-green-700 overflow-hidden bg-zinc-900 flex-shrink-0 flex items-center justify-center text-[10px]">
-                  {guestInstagram || guestName ? (
+                  {guestRole === "OWNER" ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
-                      src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(guestInstagram || guestName)}`}
+                      src="/images/pixel-cat-owner.svg"
+                      alt="Owner Avatar"
+                      className="w-full h-full object-cover bg-zinc-950"
+                    />
+                  ) : guestCustomAvatar || guestInstagram || guestName ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={guestCustomAvatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(guestInstagram || guestName)}`}
                       alt="Avatar"
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover bg-zinc-950"
@@ -1236,7 +1573,7 @@ export default function Home() {
               <p>{t("guest_role")}: {guestRole} {guestRole === "OWNER" && t("guest_owner_desc")}</p>
             </div>
 
-            <form onSubmit={handlePostComment} className="flex flex-col gap-3">
+            <form onSubmit={handleOpenCharacterCustomizer} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-black uppercase tracking-wider">{t("guest_message_label")}</label>
                 <textarea
@@ -1344,7 +1681,22 @@ export default function Home() {
 
                     <div className="flex items-start gap-3">
                       {/* Instagram Avatar (Clickable to profile) */}
-                      {comment.instagram ? (
+                      {comment.role === "OWNER" || comment.name.toLowerCase().includes("owner") ? (
+                        <a
+                          href={`https://instagram.com/${comment.instagram || "rzkyandriyanto"}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-10 h-10 border-2 border-black rounded-full overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-orange-500 flex-shrink-0 flex items-center justify-center font-black text-sm text-black hover:scale-105 transition-transform duration-150 cursor-pointer"
+                          title="Buka profil Owner @rzkyandriyanto"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src="/images/pixel-cat-owner.svg"
+                            alt="Owner Cat Avatar"
+                            className="w-full h-full object-cover bg-zinc-950"
+                          />
+                        </a>
+                      ) : comment.instagram ? (
                         <a
                           href={`https://instagram.com/${comment.instagram}`}
                           target="_blank"
@@ -1354,7 +1706,7 @@ export default function Home() {
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src={comment.avatar_url && (comment.avatar_url.includes("weserv.nl") || comment.avatar_url.includes("cdninstagram")) ? comment.avatar_url : `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(comment.instagram)}`}
+                            src={comment.avatar_url || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(comment.instagram)}`}
                             alt={comment.name}
                             className="w-full h-full object-cover bg-zinc-950"
                           />
@@ -1363,7 +1715,7 @@ export default function Home() {
                         <div className="w-10 h-10 border-2 border-black rounded-full overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-orange-400 flex-shrink-0 flex items-center justify-center font-black text-sm text-black">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(comment.name)}`}
+                            src={comment.avatar_url || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(comment.name)}`}
                             alt={comment.name}
                             className="w-full h-full object-cover bg-zinc-950"
                           />
@@ -1543,6 +1895,15 @@ export default function Home() {
         </div>,
         document.body
       )}
+
+      {/* Modal Karakter Pixel Art saat Submit Komentar */}
+      <CharacterCustomizerModal
+        isOpen={isCharacterModalOpen}
+        onClose={() => setIsCharacterModalOpen(false)}
+        onConfirm={handleConfirmCommentWithAvatar}
+        initialName={guestName}
+        initialInstagram={guestInstagram}
+      />
     </main>
   );
 }

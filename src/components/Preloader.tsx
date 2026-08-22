@@ -18,7 +18,7 @@ export default function Preloader() {
   const [name, setName] = useState("");
   const [instagram, setInstagram] = useState("");
   const [role, setRole] = useState<PreloaderRole | null>(null); // null = belum pilih
-  const [activeLogs, setActiveLogs] = useState<string[]>([]);
+  const [currentLogIndex, setCurrentLogIndex] = useState(0);
   const [isHoveredGF, setIsHoveredGF] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -95,6 +95,7 @@ export default function Preloader() {
     localStorage.setItem("guest_instagram", finalIg);
     localStorage.setItem("guest_role", finalRole);
     setRole(finalRole);
+    setCurrentLogIndex(0);
     setStage("logs");
 
     if (typeof window !== "undefined") {
@@ -104,45 +105,107 @@ export default function Preloader() {
     }
   };
 
-  useEffect(() => {
-    if (stage !== "logs") return;
-
-    // Reset activeLogs so that it always starts fresh
-    setActiveLogs([]);
-
-    let currentIndex = 0;
-    const interval = setInterval(() => {
-      if (currentIndex < logMessages.length) {
-        const nextLog = logMessages[currentIndex];
-        if (nextLog !== undefined) {
-          setActiveLogs((prev) => [...prev, nextLog]);
-        }
-        currentIndex++;
-        setTimeout(() => {
-          if (logContainerRef.current) {
-            logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
-          }
-        }, 50);
-      } else {
-        clearInterval(interval);
-        setTimeout(() => {
-          setStage("welcome");
-        }, 800);
-      }
-    }, 350);
-
-    return () => clearInterval(interval);
-  }, [stage, role, name]);
-
   const triggerExitAnimation = () => {
-    gsap.to(loaderRef.current, {
-      opacity: 0,
-      duration: 1.2,
-      ease: "power2.inOut",
+    if (!loaderRef.current) {
+      setLoading(false);
+      window.dispatchEvent(new Event("loaderFinished"));
+      return;
+    }
+
+    const tl = gsap.timeline({
       onComplete: () => {
         setLoading(false);
         window.dispatchEvent(new Event("loaderFinished"));
       },
+    });
+
+    // === TAHAP 1: INTENSE CRT SYSTEM ERROR & VIOLENT GLITCH BURST ===
+    // 1. Sudden massive shake, color inversion & RGB chromatic aberration
+    tl.to(loaderRef.current, {
+      x: -16,
+      y: 8,
+      skewX: 10,
+      filter: "invert(1) contrast(2.5) brightness(2)",
+      opacity: 0.9,
+      duration: 0.05,
+      ease: "none",
+    })
+    .to(loaderRef.current, {
+      x: 18,
+      y: -10,
+      skewX: -12,
+      rotate: 2,
+      filter: "drop-shadow(-10px 0 0 #00ffff) drop-shadow(10px 0 0 #ff0055) brightness(2.5)",
+      opacity: 1,
+      duration: 0.05,
+      ease: "none",
+    })
+    // 2. Blackout dropout (Sinyal drop mendadak)
+    .to(loaderRef.current, {
+      opacity: 0,
+      duration: 0.03,
+      ease: "none",
+    })
+    // 3. Blinding White Flash & severe horizontal scanline tear
+    .to(loaderRef.current, {
+      opacity: 1,
+      x: -10,
+      y: 12,
+      skewX: 16,
+      rotate: -2.5,
+      scaleY: 1.08,
+      filter: "invert(1) brightness(3.5) contrast(3)",
+      duration: 0.07,
+      ease: "none",
+    })
+    // 4. Rapid electrical flickers (Kedip tegangan tinggi TV tabung error)
+    .to(loaderRef.current, {
+      x: 12,
+      y: -6,
+      skewX: -8,
+      rotate: 1.2,
+      filter: "drop-shadow(8px 0 0 #00ff66) drop-shadow(-8px 0 0 #ff00ff) contrast(2)",
+      opacity: 0.25,
+      duration: 0.04,
+    })
+    .to(loaderRef.current, {
+      opacity: 1,
+      x: -6,
+      y: 4,
+      skewX: 5,
+      rotate: 0,
+      duration: 0.04,
+    })
+    .to(loaderRef.current, {
+      opacity: 0.1,
+      x: 8,
+      y: -3,
+      duration: 0.03,
+    })
+    .to(loaderRef.current, {
+      opacity: 1,
+      x: 0,
+      y: 0,
+      skewX: 0,
+      rotate: 0,
+      scaleY: 1,
+      filter: "brightness(3) contrast(2)",
+      duration: 0.08,
+    })
+    // === TAHAP 2: CRT TUBE COLLAPSE (Sinar TV Tabung Menciut & Lenyap) ===
+    .to(loaderRef.current, {
+      scaleY: 0.003,
+      scaleX: 1.2,
+      filter: "brightness(5) contrast(4)",
+      backgroundColor: "#ffffff",
+      duration: 0.22,
+      ease: "power4.in",
+    })
+    .to(loaderRef.current, {
+      scaleX: 0,
+      opacity: 0,
+      duration: 0.12,
+      ease: "power4.in",
     });
   };
 
@@ -229,7 +292,7 @@ export default function Preloader() {
                       onClick={() => { setRole(r); setHasError(false); setErrorMsg(""); }}
                       onMouseEnter={r === "GIRLFRIEND" ? () => setIsHoveredGF(true) : undefined}
                       onMouseLeave={r === "GIRLFRIEND" ? () => setIsHoveredGF(false) : undefined}
-                      className={`border-2 px-3 py-1.5 md:py-2 text-xs md:text-sm font-black uppercase transition-all duration-300 flex items-center justify-center gap-1.5 ${
+                      className={`group border-2 px-3 py-1.5 md:py-2 text-xs md:text-sm font-black uppercase transition-all duration-300 flex items-center justify-center gap-1.5 ${
                         r === "GIRLFRIEND" ? "col-span-2" : ""
                       } ${
                         role === r
@@ -245,7 +308,7 @@ export default function Preloader() {
                           : "bg-black text-green-700 border-green-900 hover:border-green-600 hover:text-green-500"
                       }`}
                     >
-                      [ {r} {r === "GIRLFRIEND" && <PixelHeart className="w-3.5 h-3.5 text-white animate-heartbeat" />} ]
+                      [ {r} {r === "GIRLFRIEND" && <PixelHeart className={`w-3.5 h-3.5 ${role === "GIRLFRIEND" ? "text-[#ff6fa4]" : "text-red-500 group-hover:text-white"} transition-colors duration-200 animate-heartbeat`} />} ]
                     </button>
                   ))}
                 </div>
@@ -286,38 +349,70 @@ export default function Preloader() {
               }`}
               style={{ scrollbarWidth: "none" }}
             >
-              {activeLogs.map((log, index) => (
-                <div key={index} className="leading-relaxed">
-                  <span className={`font-bold mr-2 ${isGF ? "text-pink-200" : "text-green-700"}`}>&gt;&gt;</span>
-                  <EncryptedText
-                    text={log}
-                    interval={15}
-                    revealSpeed={2}
-                    className={`${isGF ? "text-white" : "text-green-400"} font-mono`}
-                  />
-                </div>
-              ))}
+              {logMessages.slice(0, currentLogIndex + 1).map((log, index) => {
+                const isCurrentActive = index === currentLogIndex;
+                return (
+                  <div key={index} className="leading-relaxed">
+                    <span className={`font-bold mr-2 ${isGF ? "text-pink-200" : "text-green-700"}`}>&gt;&gt;</span>
+                    {isCurrentActive ? (
+                      <EncryptedText
+                        text={log}
+                        interval={10}
+                        cyclesPerChar={1}
+                        className={`${isGF ? "text-white" : "text-green-400"} font-mono`}
+                        onComplete={() => {
+                          if (logContainerRef.current) {
+                            logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
+                          }
+                          if (index < logMessages.length - 1) {
+                            setTimeout(() => {
+                              setCurrentLogIndex((prev) => prev + 1);
+                            }, 80);
+                          } else {
+                            setTimeout(() => {
+                              setStage("welcome");
+                            }, 600);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <span className={`${isGF ? "text-white" : "text-green-400"} font-mono`}>
+                        {log}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 
           {stage === "welcome" && (
             <div className="flex flex-col items-center justify-center gap-4 text-center">
               <div className="flex items-center justify-center gap-2">
-                {isGF && <PixelHeart className="w-8 h-8 md:w-12 md:h-12 text-white animate-heartbeat" />}
-                <EncryptedText
-                  text={`WELCOME, ${name.toUpperCase()}!`}
-                  className={`font-bebas-neue text-4xl sm:text-6xl md:text-7xl tracking-wider font-black select-none ${
-                    isGF ? "text-white" : "text-[#ff1a75]"
-                  }`}
-                  interval={25}
-                  revealSpeed={1}
-                  onComplete={() => {
-                    setTimeout(() => {
-                      triggerExitAnimation();
-                    }, 1200);
-                  }}
-                />
-                {isGF && <PixelHeart className="w-8 h-8 md:w-12 md:h-12 text-white animate-heartbeat [animation-delay:0.2s]" />}
+                {isGF && <PixelHeart className="w-8 h-8 md:w-12 md:h-12 text-red-500 animate-heartbeat" />}
+                <div className="inline-flex items-center">
+                  <EncryptedText
+                    text={`WELCOME, ${name.toUpperCase()}!`}
+                    className={`font-bebas-neue text-4xl sm:text-6xl md:text-7xl tracking-wider font-black select-none ${
+                      isGF ? "text-white" : "text-[#ff1a75]"
+                    }`}
+                    interval={45}
+                    cyclesPerChar={2}
+                    onComplete={() => {
+                      setTimeout(() => {
+                        triggerExitAnimation();
+                      }, 1400);
+                    }}
+                  />
+                  {/* Blinking Typing Cursor / Garis Kedip */}
+                  <span
+                    className={`inline-block w-1.5 sm:w-2.5 h-7 sm:h-11 md:h-14 ml-1.5 animate-pulse transition-colors duration-300 ${
+                      isGF ? "bg-white shadow-[0_0_8px_#ffffff]" : "bg-[#ff1a75] shadow-[0_0_10px_#ff1a75]"
+                    }`}
+                    style={{ animationDuration: "0.6s" }}
+                  />
+                </div>
+                {isGF && <PixelHeart className="w-8 h-8 md:w-12 md:h-12 text-red-500 animate-heartbeat [animation-delay:0.2s]" />}
               </div>
               <div className={`w-16 h-1 animate-pulse mt-2 ${isGF ? "bg-white" : "bg-green-500"}`}></div>
             </div>
@@ -336,6 +431,7 @@ export default function Preloader() {
               localStorage.setItem("guest_name", "Rizky (Owner)");
               localStorage.setItem("guest_instagram", "rzkyandriyanto");
               localStorage.setItem("guest_role", "OWNER");
+              setCurrentLogIndex(0);
               setStage("logs");
               if (typeof window !== "undefined") {
                 window.dispatchEvent(new CustomEvent("guest_auth_updated", {
@@ -358,6 +454,7 @@ export default function Preloader() {
             localStorage.setItem("guest_name", "Rizky (Owner)");
             localStorage.setItem("guest_instagram", "rzkyandriyanto");
             localStorage.setItem("guest_role", "OWNER");
+            setCurrentLogIndex(0);
             setStage("logs");
             if (typeof window !== "undefined") {
               window.dispatchEvent(new CustomEvent("guest_auth_updated", {
