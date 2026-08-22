@@ -1354,7 +1354,7 @@ export default function Home() {
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src={comment.avatar_url && comment.avatar_url.startsWith("http") ? comment.avatar_url : `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(comment.instagram)}`}
+                            src={comment.avatar_url && (comment.avatar_url.includes("weserv.nl") || comment.avatar_url.includes("cdninstagram")) ? comment.avatar_url : `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(comment.instagram)}`}
                             alt={comment.name}
                             className="w-full h-full object-cover bg-zinc-950"
                           />
