@@ -26,6 +26,8 @@ interface GuestComment {
   timestamp: string;
 }
 
+const CF_AVATAR_ENDPOINT = "https://ig-avatar.flovvers21.workers.dev";
+
 function InstagramVerifiedBadge() {
   return (
     <svg
@@ -127,7 +129,7 @@ export default function Home() {
                 id: item.id.toString(),
                 name: item.name,
                 instagram: item.instagram || undefined,
-                avatar_url: item.avatar_url || (item.instagram ? `/api/instagram-avatar?username=${encodeURIComponent(item.instagram)}` : undefined),
+                avatar_url: item.avatar_url || (item.instagram ? `${CF_AVATAR_ENDPOINT}?username=${encodeURIComponent(item.instagram)}` : undefined),
                 isVerified: !!item.is_verified || !!item.isVerified,
                 isPinned: !!item.is_pinned || !!item.isPinned,
                 rating: item.rating !== null && item.rating !== undefined ? Number(item.rating) : undefined,
@@ -178,7 +180,7 @@ export default function Home() {
     const tempId = Date.now().toString();
 
     const avatarUrl = cleanIg
-      ? `/api/instagram-avatar?username=${encodeURIComponent(cleanIg)}`
+      ? `${CF_AVATAR_ENDPOINT}?username=${encodeURIComponent(cleanIg)}`
       : undefined;
 
     const newCommentObj: GuestComment = {
@@ -1217,7 +1219,7 @@ export default function Home() {
                   {guestInstagram ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
-                      src={`/api/instagram-avatar?username=${encodeURIComponent(guestInstagram)}&v=3`}
+                      src={`${CF_AVATAR_ENDPOINT}?username=${encodeURIComponent(guestInstagram)}`}
                       alt="Avatar"
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
@@ -1355,7 +1357,7 @@ export default function Home() {
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src={comment.avatar_url || `/api/instagram-avatar?username=${encodeURIComponent(comment.instagram)}&v=3`}
+                            src={comment.avatar_url || `${CF_AVATAR_ENDPOINT}?username=${encodeURIComponent(comment.instagram)}`}
                             alt={comment.name}
                             referrerPolicy="no-referrer"
                             className="w-full h-full object-cover"
