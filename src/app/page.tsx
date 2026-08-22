@@ -17,6 +17,7 @@ interface GuestComment {
   id: string;
   name: string;
   instagram?: string;
+  avatar_url?: string;
   isVerified?: boolean;
   isPinned?: boolean;
   rating?: number;
@@ -112,6 +113,7 @@ export default function Home() {
               id: string | number;
               name: string;
               instagram?: string;
+              avatar_url?: string;
               is_verified?: boolean;
               isVerified?: boolean;
               is_pinned?: boolean;
@@ -125,6 +127,7 @@ export default function Home() {
                 id: item.id.toString(),
                 name: item.name,
                 instagram: item.instagram || undefined,
+                avatar_url: item.avatar_url || (item.instagram ? `/api/instagram-avatar?username=${encodeURIComponent(item.instagram)}` : undefined),
                 isVerified: !!item.is_verified || !!item.isVerified,
                 isPinned: !!item.is_pinned || !!item.isPinned,
                 rating: item.rating !== null && item.rating !== undefined ? Number(item.rating) : undefined,
@@ -168,33 +171,23 @@ export default function Home() {
     e.preventDefault();
     if (!newComment.trim()) return;
 
-    const authorName = guestName.trim() || "Anonymous Guest";
+    const authorName = guestName || "Anonymous Visitor";
     const authorRole = guestRole || "GUEST";
-    const cleanIg = guestInstagram.replace(/^@/, "").trim();
-
-    // Check if account is verified on Instagram
-    let isVerifiedAccount = false;
-    if (cleanIg) {
-      try {
-        const verifyRes = await fetch(`/api/instagram-info?username=${encodeURIComponent(cleanIg)}`);
-        if (verifyRes.ok) {
-          const vData = await verifyRes.json();
-          isVerifiedAccount = !!vData.isVerified;
-        }
-      } catch {
-        // ignore
-      }
-    }
-
+    const cleanIg = guestInstagram ? guestInstagram.replace(/^@/, "").trim() : undefined;
+    const isVerifiedAccount = cleanIg ? ["prabowo", "aniesbaswedan", "ganjar_pranowo", "windahbasudara", "bahlillahadalia", "ybrap"].includes(cleanIg.toLowerCase()) : false;
     const tempId = Date.now().toString();
-    const finalRating = authorRole === "OWNER" ? undefined : rating;
+
+    const avatarUrl = cleanIg
+      ? `/api/instagram-avatar?username=${encodeURIComponent(cleanIg)}`
+      : undefined;
 
     const newCommentObj: GuestComment = {
       id: tempId,
       name: authorName,
       instagram: cleanIg || undefined,
+      avatar_url: avatarUrl,
       isVerified: isVerifiedAccount,
-      rating: finalRating,
+      rating: authorRole === "OWNER" ? undefined : rating,
       role: authorRole,
       text: newComment.trim(),
       timestamp: new Date().toISOString(),
@@ -216,6 +209,7 @@ export default function Home() {
             {
               name: authorName,
               instagram: cleanIg || null,
+              avatar_url: avatarUrl || null,
               is_verified: isVerifiedAccount,
               rating: authorRole === "OWNER" ? null : rating,
               role: authorRole,
@@ -1223,12 +1217,12 @@ export default function Home() {
                   {guestInstagram ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
-                      src={`/api/instagram-avatar?username=${encodeURIComponent(guestInstagram)}&v=2`}
+                      src={`/api/instagram-avatar?username=${encodeURIComponent(guestInstagram)}&v=3`}
                       alt="Avatar"
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(guestName || "guest")}`;
+                        (e.currentTarget as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(guestName || "guest")}&backgroundColor=f97316,e11d48,8b5cf6,06b6d4,10b981&textColor=ffffff`;
                       }}
                     />
                   ) : (
@@ -1361,12 +1355,12 @@ export default function Home() {
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src={`/api/instagram-avatar?username=${encodeURIComponent(comment.instagram)}&v=2`}
+                            src={comment.avatar_url || `/api/instagram-avatar?username=${encodeURIComponent(comment.instagram)}&v=3`}
                             alt={comment.name}
                             referrerPolicy="no-referrer"
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              (e.currentTarget as HTMLImageElement).src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(comment.name)}`;
+                              (e.currentTarget as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(comment.name)}&backgroundColor=f97316,e11d48,8b5cf6,06b6d4,10b981&textColor=ffffff`;
                             }}
                           />
                         </a>

@@ -10,6 +10,7 @@ const KNOWN_AVATARS: Record<string, string> = {
   windahbasudara: "https://images.weserv.nl/?url=https%3A%2F%2Fscontent.cdninstagram.com%2Fv%2Ft51.82787-19%2F761462365_18399928372092657_2126015193312851278_n.jpg%3Fstp%3Ddst-jpg_s100x100_tt6%26_nc_cat%3D1%26ccb%3D7-5%26_nc_sid%3Dbf7eb4%26efg%3DeyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMzIn0%253D%26_nc_ohc%3DQA7FBL03OqgQ7kNvwGA5UjV%26_nc_oc%3DAdqEJzweK-cPt5fBGidxRxRLpMWjLquMeZCokGBCy96MNbqCc5McVE73flvApZLn8PY%26_nc_zt%3D24%26_nc_ht%3Dscontent.cdninstagram.com%26_nc_gid%3DeddG55QVA9o-oGOUb6-4zw%26_nc_ss%3D7fa8c%26oh%3D00_AQF_65mNvTC5K_deMaoSCxSlNgLm7QjqL_QVhMz5pE9FqA%26oe%3D6A8F0E59",
   bahlillahadalia: "https://images.weserv.nl/?url=https%3A%2F%2Fscontent.cdninstagram.com%2Fv%2Ft51.2885-19%2F456245711_7919549084833262_3699064924206028229_n.jpg%3Fstp%3Ddst-jpg_s100x100_tt6%26_nc_cat%3D102%26ccb%3D7-5%26_nc_sid%3Dbf7eb4%26efg%3DeyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMzIn0%253D%26_nc_ohc%3D2-zSwSEHAXwQ7kNvwHazqVu%26_nc_oc%3DAdorSKZleud4TyFz4eG4PIpV3BDAmwhUwf_w-NV5Puy0SWJ8qW5R9EkKby8VbkOIvPw%26_nc_zt%3D24%26_nc_ht%3Dscontent.cdninstagram.com%26_nc_ss%3D7fa8c%26oh%3D00_AQFF0HscrqUKT_sSi2aScADgEM9PXaO9bzH-8BXMTuDeVA%26oe%3D6A8F1AFC",
   adihidayatofficial: "https://images.weserv.nl/?url=https%3A%2F%2Fscontent.cdninstagram.com%2Fv%2Ft51.2885-19%2F439226215_389850123921838_8798034956532453522_n.jpg%3Fstp%3Ddst-jpg_s100x100_tt6%26_nc_cat%3D111%26ccb%3D7-5%26_nc_sid%3Dbf7eb4%26efg%3DeyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy42NDAuQzMifQ%253D%253D%26_nc_ohc%3DKeoZ_m6hVFUQ7kNvwEWgC3N%26_nc_oc%3DAdrc-dsYD0ogDdS-WTEqmaPr6JsWLnuVMayZlvB_v-VPL4Tr6MvUCxcIJAoWFLOfx3M%26_nc_zt%3D24%26_nc_ht%3Dscontent.cdninstagram.com%26_nc_ss%3D7fa8c%26oh%3D00_AQEk35ARg1cVYe8BLHL6EIVLWE_pD4eCrpOeovDd2QyMwQ%26oe%3D6A8F1942",
+  "djed.komdigi": "https://images.weserv.nl/?url=https%3A%2F%2Fscontent.cdninstagram.com%2Fv%2Ft51.82787-19%2F522118239_18286322158266087_5193828690908234598_n.jpg%3Fstp%3Ddst-jpg_s100x100_tt6%26_nc_cat%3D100%26ccb%3D7-5%26_nc_sid%3Dbf7eb4%26efg%3DeyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDE2LkMzIn0%253D%26_nc_ohc%3D6VYCdBnLPloQ7kNvwEh6WcN%26_nc_oc%3DAdpJJKtzV9_KJHPhXVxWoRvqs1oPKmWuK8RuqAoy1FOVUUgAogEX7FQMn6j-rF9QOMA%26_nc_zt%3D24%26_nc_ht%3Dscontent.cdninstagram.com%26_nc_gid%3D9ijN3faJItiPSpuuU_sRWw%26_nc_ss%3D7fa8c%26oh%3D00_AQF3paqumVsEzIzV9AJNIBLiy9VZkf3alP8tI2j1GynqDg%26oe%3D6A8F3B69",
 };
 
 function extractCdnUrl(html: string): string | null {
@@ -73,16 +74,23 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 3. Fallback: try unavatar.io
-    if (!profilePicUrl) {
-      profilePicUrl = `https://unavatar.io/instagram/${encodeURIComponent(username)}`;
+    if (profilePicUrl) {
+      return NextResponse.redirect(profilePicUrl, {
+        headers: {
+          "Cache-Control": "public, max-age=86400, stale-while-revalidate=43200",
+        },
+      });
     }
 
-    return NextResponse.redirect(profilePicUrl, {
-      headers: {
-        "Cache-Control": "public, max-age=86400, stale-while-revalidate=43200",
-      },
-    });
+    // 3. Fallback: initials avatar with vibrant background
+    return NextResponse.redirect(
+      `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(username)}&backgroundColor=f97316,e11d48,8b5cf6,06b6d4,10b981&textColor=ffffff`,
+      {
+        headers: {
+          "Cache-Control": "public, max-age=3600",
+        },
+      }
+    );
   } catch (error) {
     console.error("IG Avatar Fetch Error:", error);
     return NextResponse.redirect(
