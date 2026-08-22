@@ -37,34 +37,18 @@ export async function GET(request: NextRequest) {
       // Fallback
     }
 
-    // 2. Fallback: unavatar / Google proxy if not found
+    // 2. Fallback: unavatar if not found
     if (!profilePicUrl) {
       profilePicUrl = `https://unavatar.io/instagram/${encodeURIComponent(username)}`;
     }
 
-    // 3. Fetch the image binary and stream directly to client
-    const imageRes = await fetch(profilePicUrl, {
+    // 3. Redirect the client browser directly to the profile picture URL.
+    // This allows the browser to download the image using the user's own IP address,
+    // bypassing Vercel server IP blocks and rate limits on unavatar.io.
+    return NextResponse.redirect(profilePicUrl, {
       headers: {
-        "User-Agent": "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
+        "Cache-Control": "public, max-age=86400, stale-while-revalidate=43200",
       },
-    });
-
-    if (imageRes.ok) {
-      const buffer = await imageRes.arrayBuffer();
-      const contentType = imageRes.headers.get("content-type") || "image/jpeg";
-      return new NextResponse(buffer, {
-        headers: {
-          "Content-Type": contentType,
-          "Cache-Control": "public, max-age=86400, stale-while-revalidate=43200",
-        },
-      });
-    }
-
-    // 4. Fallback robot avatar if user does not exist
-    const fallbackRes = await fetch(`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username)}`);
-    const fallbackBuffer = await fallbackRes.arrayBuffer();
-    return new NextResponse(fallbackBuffer, {
-      headers: { "Content-Type": "image/svg+xml" },
     });
   } catch (error) {
     console.error("IG Avatar Fetch Error:", error);
