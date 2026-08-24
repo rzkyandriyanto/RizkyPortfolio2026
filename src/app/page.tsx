@@ -10,6 +10,26 @@ import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../context/LanguageContext";
 import CharacterCustomizerModal from "../components/CharacterCustomizerModal";
+import OwnerContentModal, { ModalType } from "../components/OwnerContentModal";
+import {
+  ProjectItem,
+  ExperienceItem,
+  EducationData,
+  CertificateItem,
+  SkillsData,
+  DEFAULT_SKILLS,
+  getSavedProjects,
+  saveProjects,
+  getSavedExperiences,
+  saveExperiences,
+  getSavedEducation,
+  saveEducation,
+  getSavedCertificates,
+  saveCertificates,
+  getSavedSkills,
+  saveSkills,
+  resetAllPortfolioData,
+} from "../lib/portfolioData";
 import { TechIcon } from "../components/TechIcons";
 import RotatingBadge from "../components/ui/RotatingBadge";
 
@@ -96,10 +116,33 @@ export default function Home() {
   const [rating, setRating] = useState<number>(10);
   const [guestRole, setGuestRole] = useState<"HRD" | "FRIEND" | "BROTHER" | "GUEST" | "GIRLFRIEND" | "OWNER">("GUEST");
 
+  // State Portfolio Dinamis (Mode Owner Add/Edit)
+  const [portfolioProjects, setPortfolioProjects] = useState<ProjectItem[]>([]);
+  const [portfolioExperiences, setPortfolioExperiences] = useState<ExperienceItem[]>([]);
+  const [portfolioEducation, setPortfolioEducation] = useState<EducationData | null>(null);
+  const [portfolioCertificates, setPortfolioCertificates] = useState<CertificateItem[]>([]);
+  const [portfolioSkills, setPortfolioSkills] = useState<SkillsData | null>(null);
+
+  // State Modal Mode Owner
+  const [isOwnerModalOpen, setIsOwnerModalOpen] = useState(false);
+  const [ownerModalType, setOwnerModalType] = useState<ModalType>("project");
+  const [ownerModalData, setOwnerModalData] = useState<
+    ProjectItem | ExperienceItem | EducationData | CertificateItem | SkillsData | null
+  >(null);
+
   const ratedComments = comments.filter((c) => c.rating !== undefined && c.role !== "OWNER");
   const averageRating = ratedComments.length > 0
     ? ratedComments.reduce((acc, c) => acc + (c.rating || 0), 0) / ratedComments.length
     : null;
+
+  // Load portfolio dynamic content from local storage
+  useEffect(() => {
+    setPortfolioProjects(getSavedProjects());
+    setPortfolioExperiences(getSavedExperiences());
+    setPortfolioEducation(getSavedEducation());
+    setPortfolioCertificates(getSavedCertificates());
+    setPortfolioSkills(getSavedSkills());
+  }, []);
 
   // Membaca identitas visitor & komentar dari Supabase / localStorage pada saat load
   useEffect(() => {
@@ -311,14 +354,97 @@ export default function Home() {
 
   const handleSecretOwnerUnlock = () => {
     const secret = prompt("Masukkan Password Owner:");
-    if (secret?.trim().toLowerCase() === "guk") {
+    if (secret?.trim().toLowerCase() === "guk" || secret?.trim() === "2026" || secret?.trim().toLowerCase() === "owner") {
       setGuestRole("OWNER");
       setGuestName("Rizky (Owner)");
       localStorage.setItem("guest_role", "OWNER");
       localStorage.setItem("guest_name", "Rizky (Owner)");
-      alert("✓ OWNER MODE AKTIF! Anda sekarang dapat menghapus komentar apapun.");
+      alert("✓ OWNER MODE AKTIF! Anda sekarang dapat menambah & mengedit projek, pengalaman, pendidikan, dan sertifikat.");
     } else if (secret) {
       alert("✕ Password salah.");
+    }
+  };
+
+  // Handler Open Modal Mode Owner
+  const openOwnerModal = (
+    type: ModalType,
+    data: ProjectItem | ExperienceItem | EducationData | CertificateItem | SkillsData | null = null
+  ) => {
+    setOwnerModalType(type);
+    setOwnerModalData(data);
+    setIsOwnerModalOpen(true);
+  };
+
+  const handleSaveProject = (item: ProjectItem) => {
+    setPortfolioProjects((prev) => {
+      const exists = prev.some((p) => p.id === item.id);
+      const updated = exists ? prev.map((p) => (p.id === item.id ? item : p)) : [item, ...prev];
+      saveProjects(updated);
+      return updated;
+    });
+  };
+
+  const handleDeleteProject = (id: string) => {
+    setPortfolioProjects((prev) => {
+      const updated = prev.filter((p) => p.id !== id);
+      saveProjects(updated);
+      return updated;
+    });
+  };
+
+  const handleSaveExperience = (item: ExperienceItem) => {
+    setPortfolioExperiences((prev) => {
+      const exists = prev.some((e) => e.id === item.id);
+      const updated = exists ? prev.map((e) => (e.id === item.id ? item : e)) : [item, ...prev];
+      saveExperiences(updated);
+      return updated;
+    });
+  };
+
+  const handleDeleteExperience = (id: string) => {
+    setPortfolioExperiences((prev) => {
+      const updated = prev.filter((e) => e.id !== id);
+      saveExperiences(updated);
+      return updated;
+    });
+  };
+
+  const handleSaveEducation = (data: EducationData) => {
+    setPortfolioEducation(data);
+    saveEducation(data);
+  };
+
+  const handleSaveCertificate = (item: CertificateItem) => {
+    setPortfolioCertificates((prev) => {
+      const exists = prev.some((c) => c.id === item.id);
+      const updated = exists ? prev.map((c) => (c.id === item.id ? item : c)) : [item, ...prev];
+      saveCertificates(updated);
+      return updated;
+    });
+  };
+
+  const handleDeleteCertificate = (id: string) => {
+    setPortfolioCertificates((prev) => {
+      const updated = prev.filter((c) => c.id !== id);
+      saveCertificates(updated);
+      return updated;
+    });
+  };
+
+  const handleSaveSkills = (skills: SkillsData) => {
+    setPortfolioSkills(skills);
+    saveSkills(skills);
+  };
+
+  const handleResetAllData = () => {
+    if (confirm("Reset semua data projek, pengalaman, pendidikan, sertifikat, dan skills kembali ke default?")) {
+      resetAllPortfolioData();
+      setPortfolioProjects(getSavedProjects());
+      setPortfolioExperiences(getSavedExperiences());
+      setPortfolioEducation(getSavedEducation());
+      setPortfolioCertificates(getSavedCertificates());
+      setPortfolioSkills(getSavedSkills());
+      alert("✓ Data berhasil di-reset ke default!");
     }
   };
 
@@ -828,128 +954,92 @@ export default function Home() {
 
       {/* ===================================================== */}
       {/* ===================================================== */}
+      {/* ===================================================== */}
       {/* === WORK EXPERIENCE SECTION === */}
       {/* ===================================================== */}
       <section id="work" ref={workExperienceRef} className="w-full mt-24 mb-16 px-0 scroll-mt-24">
-        <div className="flex items-center gap-4 mb-10">
-          <div className="inline-block px-6 py-2 border-2 border-black rounded-full text-sm font-black uppercase tracking-widest bg-orange-500 text-black shadow-[5px_4px_0px_0px_rgba(0,0,0,1)]">
-            {t("exp_header")}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
+          <div className="flex items-center gap-4 flex-1">
+            <div className="inline-block px-6 py-2 border-2 border-black rounded-full text-sm font-black uppercase tracking-widest bg-orange-500 text-black shadow-[5px_4px_0px_0px_rgba(0,0,0,1)]">
+              {t("exp_header")}
+            </div>
+            <div className="flex-1 h-[3px] bg-black"></div>
           </div>
-          <div className="flex-1 h-[3px] bg-black"></div>
+          {guestRole === "OWNER" && (
+            <button
+              onClick={() => openOwnerModal("experience", null)}
+              className="inline-flex items-center gap-2 px-4 py-2 border-2 border-black bg-yellow-300 hover:bg-yellow-400 text-black text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 transition-all self-start sm:self-auto cursor-pointer"
+            >
+              <span>+</span> Tambah Pengalaman
+            </button>
+          )}
         </div>
         <div className="flex flex-col gap-8">
-
-          {/* 1. PT Segara Lentera Teknologi (Web Development Intern - TECH PRIORITY #1) */}
-          <div className="scroll-card-reveal border-2 border-black p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all duration-300 bg-white relative">
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 mb-4">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] font-black uppercase tracking-widest bg-orange-500 text-black px-2 py-0.5 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
-                    TECH / WEB DEV
-                  </span>
+          {portfolioExperiences.map((exp) => (
+            <div
+              key={exp.id}
+              className="scroll-card-reveal border-2 border-black p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all duration-300 bg-white relative group"
+            >
+              {guestRole === "OWNER" && (
+                <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+                  <button
+                    onClick={() => openOwnerModal("experience", exp)}
+                    className="px-2.5 py-1 bg-yellow-300 hover:bg-yellow-400 text-black border-2 border-black text-[10px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] cursor-pointer"
+                    title="Edit Pengalaman"
+                  >
+                    ✏️ Edit
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirm(`Hapus pengalaman ${exp.title}?`)) {
+                        handleDeleteExperience(exp.id);
+                      }
+                    }}
+                    className="px-2.5 py-1 bg-red-500 hover:bg-red-600 text-white border-2 border-black text-[10px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] cursor-pointer"
+                    title="Hapus Pengalaman"
+                  >
+                    🗑️
+                  </button>
                 </div>
-                <h3 className="text-xl font-black uppercase tracking-tight">{t("intern1_title")}</h3>
-                <p className="text-base font-bold text-blue-500 uppercase">{t("intern1_role")}</p>
+              )}
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 mb-4">
+                <div>
+                  {exp.tag && (
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[10px] font-black uppercase tracking-widest bg-orange-500 text-black px-2 py-0.5 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+                        {exp.tag}
+                      </span>
+                    </div>
+                  )}
+                  <h3 className="text-xl font-black uppercase tracking-tight">{exp.title}</h3>
+                  <p className={`text-base font-bold uppercase ${exp.type === "intern" ? "text-blue-500" : "text-blue-400"}`}>
+                    {exp.role}
+                  </p>
+                </div>
+                <div className="text-left md:text-right mt-1 md:mt-0">
+                  <p className="text-sm font-black uppercase tracking-widest opacity-50">{exp.location}</p>
+                  <p className="text-sm font-bold opacity-50">{exp.date}</p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-black uppercase tracking-widest opacity-50">{t("intern1_loc")}</p>
-                <p className="text-sm font-bold opacity-50">{t("intern1_date")}</p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-3 text-sm font-medium opacity-90">
-              <div className="border-l-4 border-blue-400 pl-4">
-                {t("intern1_bullet1")}
-              </div>
-              <div className="border-l-4 border-blue-400 pl-4">
-                {t("intern1_bullet2")}
-              </div>
-              <div className="border-l-4 border-blue-400 pl-4">
-                {t("intern1_bullet3")}
-              </div>
-              <div className="border-l-4 border-blue-400 pl-4">
-                {t("intern1_bullet4")}
-              </div>
-              <div className="border-l-4 border-blue-400 pl-4">
-                {t("intern1_bullet5")}
-              </div>
-              <div className="border-l-4 border-blue-400 pl-4">
-                {t("intern1_bullet6")}
-              </div>
-            </div>
-          </div>
-
-          {/* 2. PT Sumber Alfaria Trijaya (Crew Store) */}
-          <div className="scroll-card-reveal border-2 border-black p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all duration-300 bg-white">
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 mb-4">
-              <div>
-                <h3 className="text-xl font-black uppercase tracking-tight">{t("job1_title")}</h3>
-                <p className="text-base font-bold text-blue-400 uppercase">{t("job1_role")}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-black uppercase tracking-widest opacity-50">{t("job1_loc")}</p>
-                <p className="text-sm font-bold opacity-50">{t("job1_date")}</p>
+              <div className="flex flex-col gap-3 text-sm font-medium opacity-90">
+                {exp.bullets.map((bullet, bIdx) => (
+                  <div key={bIdx} className="border-l-4 border-blue-400 pl-4">
+                    <span>{bullet} </span>
+                    {bIdx === 0 && exp.proofUrl && (
+                      <a
+                        href={exp.proofUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-xs font-black uppercase text-blue-500 hover:text-blue-600 hover:underline ml-1"
+                      >
+                        ({t("exp_proof_link")})
+                      </a>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="flex flex-col gap-3 text-sm font-medium opacity-90">
-              <div className="border-l-4 border-blue-400 pl-4">
-                <span>{t("job1_bullet1")} </span>
-                <a
-                  href="https://www.instagram.com/p/CY6Jm0dBf8s/?hl=id&img_index=1"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-xs font-black uppercase text-blue-500 hover:text-blue-600 hover:underline"
-                >
-                  ({t("exp_proof_link")})
-                </a>
-              </div>
-              <div className="border-l-4 border-blue-400 pl-4">
-                {t("job1_bullet2")}
-              </div>
-              <div className="border-l-4 border-blue-400 pl-4">
-                {t("job1_bullet3")}
-              </div>
-              <div className="border-l-4 border-blue-400 pl-4">
-                {t("job1_bullet4")}
-              </div>
-              <div className="border-l-4 border-blue-400 pl-4">
-                {t("job1_bullet5")}
-              </div>
-              <div className="border-l-4 border-blue-400 pl-4">
-                {t("job1_bullet6")}
-              </div>
-              <div className="border-l-4 border-blue-400 pl-4">
-                {t("job1_bullet7")}
-              </div>
-            </div>
-          </div>
-
-          {/* 3. Wendy's (Service Crew) */}
-          <div className="scroll-card-reveal border-2 border-black p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all duration-300 bg-white">
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 mb-4">
-              <div>
-                <h3 className="text-xl font-black uppercase tracking-tight">{t("job2_title")}</h3>
-                <p className="text-base font-bold text-blue-400 uppercase">{t("job2_role")}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-black uppercase tracking-widest opacity-50">{t("job2_loc")}</p>
-                <p className="text-sm font-bold opacity-50">{t("job2_date")}</p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-3 text-sm font-medium opacity-90">
-              <div className="border-l-4 border-blue-400 pl-4">
-                {t("job2_bullet1")}
-              </div>
-              <div className="border-l-4 border-blue-400 pl-4">
-                {t("job2_bullet2")}
-              </div>
-              <div className="border-l-4 border-blue-400 pl-4">
-                {t("job2_bullet3")}
-              </div>
-              <div className="border-l-4 border-blue-400 pl-4">
-                {t("job2_bullet4")}
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </section>
 
@@ -957,11 +1047,22 @@ export default function Home() {
       {/* === SKILLS SECTION === */}
       {/* ===================================================== */}
       <section id="skills" ref={skillsSectionRef} className="w-full mb-16 scroll-mt-24">
-        <div className="flex items-center gap-4 mb-10">
-          <div className="inline-block px-6 py-2 border-2 border-black rounded-full text-sm font-black uppercase tracking-widest bg-black text-white shadow-[5px_4px_0px_0px_rgba(0,0,0,1)]">
-            {t("skills_header")}
+        <div className="flex items-center justify-between gap-4 mb-10">
+          <div className="flex items-center gap-4 flex-1">
+            <div className="inline-block px-6 py-2 border-2 border-black rounded-full text-sm font-black uppercase tracking-widest bg-black text-white shadow-[5px_4px_0px_0px_rgba(0,0,0,1)]">
+              {t("skills_header")}
+            </div>
+            <div className="flex-1 h-[3px] bg-black"></div>
           </div>
-          <div className="flex-1 h-[3px] bg-black"></div>
+          {guestRole === "OWNER" && (
+            <button
+              onClick={() => openOwnerModal("skills", portfolioSkills || DEFAULT_SKILLS)}
+              className="px-3.5 py-1.5 bg-yellow-300 hover:bg-yellow-400 text-black border-2 border-black text-xs font-black uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer flex-shrink-0"
+              title="Edit Soft, Hard & Software Skills"
+            >
+              ✏️ Edit Skills & Logo
+            </button>
+          )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
@@ -970,21 +1071,7 @@ export default function Home() {
             <div>
               <p className="text-xs font-black uppercase tracking-[0.2em] opacity-70 mb-4">Soft Skills</p>
               <div className="flex flex-wrap gap-2">
-                {[
-                  "Analytical Thinking",
-                  "Empathy",
-                  "Diplomacy",
-                  "Komunikasi",
-                  "Open-mindedness",
-                  "Responsibility",
-                  "Leadership",
-                  "Research",
-                  "Adaptability",
-                  "Visionary",
-                  "Critical Thinking",
-                  "Curiosity",
-                  "Time Management"
-                ].map((s) => (
+                {(portfolioSkills?.softSkills || DEFAULT_SKILLS.softSkills).map((s) => (
                   <span
                     key={s}
                     className="scroll-badge-reveal px-3 py-1.5 border-2 border-black text-xs font-bold bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-orange-500 hover:text-black hover:-translate-y-0.5 transition-all duration-150 select-none cursor-default"
@@ -1001,22 +1088,7 @@ export default function Home() {
             <div>
               <p className="text-xs font-black uppercase tracking-[0.2em] opacity-70 mb-4">Hard Skills</p>
               <div className="flex flex-wrap gap-2">
-                {[
-                  "HTML",
-                  "CSS",
-                  "JavaScript",
-                  "TypeScript",
-                  "React",
-                  "Next.js",
-                  "Vue.js",
-                  "Node.js",
-                  "Angular",
-                  "MySQL",
-                  "SQLite",
-                  "UI/UX Design",
-                  "Mobile Analytics",
-                  "Website Analytics"
-                ].map((s) => (
+                {(portfolioSkills?.hardSkills || DEFAULT_SKILLS.hardSkills).map((s) => (
                   <span
                     key={s}
                     className="scroll-badge-reveal inline-flex items-center gap-1.5 px-3 py-1.5 border-2 border-black text-xs font-bold bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-blue-400 hover:text-black hover:-translate-y-0.5 transition-all duration-150 select-none cursor-default"
@@ -1034,20 +1106,7 @@ export default function Home() {
             <div>
               <p className="text-xs font-black uppercase tracking-[0.2em] opacity-70 mb-4">Software Skills</p>
               <div className="flex flex-wrap gap-2">
-                {[
-                  "VS Code",
-                  "Postman",
-                  "GitHub",
-                  "Git",
-                  "Figma",
-                  "Adobe XD",
-                  "After Effects",
-                  "Affinity Designer",
-                  "Framer",
-                  "Tableau",
-                  "Digital Illustration",
-                  "Color Grading"
-                ].map((s) => (
+                {(portfolioSkills?.softwareSkills || DEFAULT_SKILLS.softwareSkills).map((s) => (
                   <span
                     key={s}
                     className="scroll-badge-reveal inline-flex items-center gap-1.5 px-3 py-1.5 border-2 border-black text-xs font-bold bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-amber-300 hover:text-black hover:-translate-y-0.5 transition-all duration-150 select-none cursor-default"
@@ -1063,6 +1122,7 @@ export default function Home() {
       </section>
 
       {/* ===================================================== */}
+      {/* ===================================================== */}
       {/* === PROJECTS SECTION (Tabs & Horizontal Scroll) === */}
       {/* ===================================================== */}
       <section id="projects" className="w-full mb-16 scroll-mt-24" ref={projectsHeaderRef}>
@@ -1074,8 +1134,16 @@ export default function Home() {
             <div className="flex-1 h-[3px] bg-black mr-2 md:mr-6"></div>
           </div>
 
-          {/* Neobrutalist Tabs Navigation */}
+          {/* Neobrutalist Tabs Navigation + Owner Add Button */}
           <div className="flex flex-wrap items-center gap-2.5">
+            {guestRole === "OWNER" && (
+              <button
+                onClick={() => openOwnerModal("project", null)}
+                className="px-3.5 py-2 border-2 border-black text-xs font-black uppercase tracking-wider bg-yellow-300 hover:bg-yellow-400 text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
+              >
+                + Tambah Projek
+              </button>
+            )}
             <button
               onClick={() => {
                 setActiveTab("web");
@@ -1136,218 +1204,159 @@ export default function Home() {
               }}
               className="flex gap-6 snap-x snap-mandatory"
             >
-              {/* ── WEB DEVELOPMENT TAB CONTENT ── */}
-              {activeTab === "web" && (
-            <>
-              {/* ── Project 1: Social Video Downloader ── */}
-              <div
-                className="flex-shrink-0 w-[300px] md:w-[380px] snap-start border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-2 transition-all duration-300 flex flex-col"
-              >
-                {/* Iframe Preview */}
-                <div className="relative w-full h-[220px] border-b-2 border-black overflow-hidden bg-zinc-100">
-                  <iframe
-                    src="https://all-social-download-video.vercel.app/"
-                    title="All Social Video Downloader Preview"
-                    style={{ width: "133%", height: "133%", transform: "scale(0.75)", transformOrigin: "top left", pointerEvents: "none", border: "none" }}
-                    loading="lazy"
-                  />
-                  <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 bg-green-400 border-2 border-black text-[10px] font-black uppercase pointer-events-none">
-                    <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse"></span>Live
-                  </div>
+              {portfolioProjects.filter((p) => p.tab === activeTab).length === 0 ? (
+                <div className="flex-shrink-0 w-[300px] md:w-[380px] snap-start border-2 border-dashed border-black bg-white p-12 flex flex-col justify-center items-center gap-2 text-center my-2">
+                  <h3 className="text-xl font-black uppercase tracking-widest">{t("proj_coming_soon")}</h3>
+                  <p className="text-xs font-bold uppercase tracking-wider opacity-50">{activeTab.toUpperCase()} Projects</p>
                 </div>
-                {/* Card Body */}
-                <div className="p-5 flex flex-col gap-3 flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-base font-black uppercase tracking-tight leading-tight">All Social Video Downloader</h3>
-                    <span className="flex-shrink-0 text-xs font-black px-2 py-1 bg-blue-400 border-2 border-black">#01</span>
-                  </div>
-                  <p className="text-sm font-medium opacity-70 leading-relaxed flex-1">
-                    {t("proj1_desc")}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {["Next.js", "API", "Social Media"].map((t) => (
-                      <span key={t} className="text-[10px] font-black uppercase px-2 py-0.5 border-2 border-black bg-zinc-100">{t}</span>
-                    ))}
-                  </div>
-                  <a href="https://all-social-download-video.vercel.app/" target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 border-2 border-black bg-black text-white text-xs font-black uppercase tracking-widest hover:bg-blue-400 hover:text-black shadow-[3px_3px_0px_0px_rgba(96,165,250,1)] hover:shadow-none transition-all duration-200">
-                    {t("proj_view_site")}
-                  </a>
-                </div>
-              </div>
+              ) : (
+                portfolioProjects
+                  .filter((p) => p.tab === activeTab)
+                  .map((proj, pIdx) => {
+                    const dynamicNumber = `#${String(pIdx + 1).padStart(2, "0")}`;
+                    const badgeLabel = proj.badge && !proj.badge.startsWith("#") ? proj.badge : dynamicNumber;
 
-              {/* ── Project 2: Tarot App ── */}
-              <div
-                className="flex-shrink-0 w-[300px] md:w-[380px] snap-start border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-2 transition-all duration-300 flex flex-col"
-              >
-                {/* Iframe Preview */}
-                <div className="relative w-full h-[220px] border-b-2 border-black overflow-hidden bg-zinc-100">
-                  <iframe
-                    src="https://tarot-ten-taupe.vercel.app/"
-                    title="Tarot App Preview"
-                    style={{ width: "133%", height: "133%", transform: "scale(0.75)", transformOrigin: "top left", pointerEvents: "none", border: "none" }}
-                    loading="lazy"
-                  />
-                  <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 bg-green-400 border-2 border-black text-[10px] font-black uppercase pointer-events-none">
-                    <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse"></span>Live
-                  </div>
-                </div>
-                {/* Card Body */}
-                <div className="p-5 flex flex-col gap-3 flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-base font-black uppercase tracking-tight leading-tight">Tarot Card Reader</h3>
-                    <span className="flex-shrink-0 text-xs font-black px-2 py-1 bg-blue-400 border-2 border-black">#02</span>
-                  </div>
-                  <p className="text-sm font-medium opacity-70 leading-relaxed flex-1">
-                    {t("proj2_desc")}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {["React", "UI/UX", "Fun Project"].map((t) => (
-                      <span key={t} className="text-[10px] font-black uppercase px-2 py-0.5 border-2 border-black bg-zinc-100">{t}</span>
-                    ))}
-                  </div>
-                  <a href="https://tarot-ten-taupe.vercel.app/" target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 border-2 border-black bg-black text-white text-xs font-black uppercase tracking-widest hover:bg-blue-400 hover:text-black shadow-[3px_3px_0px_0px_rgba(96,165,250,1)] hover:shadow-none transition-all duration-200">
-                    {t("proj_view_site")}
-                  </a>
-                </div>
-              </div>
-            </>
-          )}
+                    return (
+                    <div
+                      key={proj.id}
+                      onClick={() => {
+                        if (proj.imageUrl && !proj.isIframe) {
+                          setLightboxSrc(proj.imageUrl);
+                          setLightboxAlt(proj.title);
+                        }
+                      }}
+                      className={`flex-shrink-0 w-[300px] md:w-[380px] snap-start border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-2 transition-all duration-300 flex flex-col relative ${proj.imageUrl && !proj.isIframe ? "cursor-zoom-in" : ""
+                        }`}
+                    >
+                      {/* Owner Edit / Delete Button */}
+                      {guestRole === "OWNER" && (
+                        <div
+                          className="absolute top-2 left-2 z-20 flex items-center gap-1.5"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            onClick={() => openOwnerModal("project", proj)}
+                            className="px-2 py-0.5 bg-yellow-300 hover:bg-yellow-400 text-black border-2 border-black text-[10px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] cursor-pointer"
+                            title="Edit Projek"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm(`Hapus projek ${proj.title}?`)) {
+                                handleDeleteProject(proj.id);
+                              }
+                            }}
+                            className="px-2 py-0.5 bg-red-500 hover:bg-red-600 text-white border-2 border-black text-[10px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] cursor-pointer"
+                            title="Hapus Projek"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      )}
 
-          {/* ── GRAPHIC DESIGN TAB CONTENT ── */}
-          {activeTab === "graphic" && (
-            <>
-              {/* Graphic Project 1: Dudul Anak Baik */}
-              <div
-                onClick={() => {
-                  setLightboxSrc("/dudul-artwork.webp");
-                  setLightboxAlt("Dudul Anak Baik");
-                }}
-                className="flex-shrink-0 w-[300px] md:w-[380px] snap-start border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-2 transition-all duration-300 flex flex-col cursor-zoom-in"
-              >
-                <div className="relative w-full h-[220px] border-b-2 border-black overflow-hidden bg-zinc-100 group">
-                  <Image
-                    src="/dudul-artwork.webp"
-                    alt="Dudul Anak Baik"
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 bg-orange-500 border-2 border-black text-[10px] font-black uppercase pointer-events-none">
-                    Design
-                  </div>
-                </div>
-                <div className="p-5 flex flex-col gap-3 flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-base font-black uppercase tracking-tight leading-tight">Dudul Anak Baik</h3>
-                    <span className="flex-shrink-0 text-xs font-black px-2 py-1 bg-blue-400 border-2 border-black">#01</span>
-                  </div>
-                  <p className="text-sm font-medium opacity-70 leading-relaxed flex-1">
-                    {t("graphic_proj1_desc")}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {["Illustration", "Graphic", "Art"].map((t) => (
-                      <span key={t} className="text-[10px] font-black uppercase px-2 py-0.5 border-2 border-black bg-zinc-100">{t}</span>
-                    ))}
-                  </div>
-                  <button className="inline-flex items-center justify-center gap-2 px-4 py-2 border-2 border-black bg-black text-white text-xs font-black uppercase tracking-widest hover:bg-blue-400 hover:text-black shadow-[3px_3px_0px_0px_rgba(96,165,250,1)] hover:shadow-none transition-all duration-200">
-                    {t("proj_view_artwork")}
-                  </button>
-                </div>
-              </div>
+                      {/* Preview Media (Iframe vs Image) */}
+                      {proj.isIframe && proj.liveUrl ? (
+                        <div className="relative w-full h-[220px] border-b-2 border-black overflow-hidden bg-zinc-100">
+                          <iframe
+                            src={proj.liveUrl}
+                            title={`${proj.title} Preview`}
+                            style={{
+                              width: "133%",
+                              height: "133%",
+                              transform: "scale(0.75)",
+                              transformOrigin: "top left",
+                              pointerEvents: "none",
+                              border: "none",
+                            }}
+                            loading="lazy"
+                          />
+                          <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 bg-green-400 border-2 border-black text-[10px] font-black uppercase pointer-events-none">
+                            <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse"></span>Live
+                          </div>
+                        </div>
+                      ) : proj.imageUrl ? (
+                        <div className={`relative w-full h-[220px] border-b-2 border-black overflow-hidden ${proj.tab === "motion" ? "bg-zinc-950 flex items-center justify-center p-4" : "bg-zinc-100 group"}`}>
+                          <Image
+                            src={proj.imageUrl}
+                            alt={proj.title}
+                            fill
+                            className={proj.tab === "motion" ? "object-contain p-2" : "object-cover transition-transform duration-500 group-hover:scale-105"}
+                            unoptimized={proj.imageUrl.endsWith(".gif") || proj.imageUrl.startsWith("data:")}
+                          />
+                          <div className={`absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 border-2 border-black text-[10px] font-black uppercase pointer-events-none ${proj.tab === "graphic" ? "bg-orange-500" : proj.tab === "motion" ? "bg-purple-400" : "bg-blue-400"}`}>
+                            {proj.tab === "graphic" ? "Design" : proj.tab === "motion" ? "Motion" : "Work"}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="relative w-full h-[180px] border-b-2 border-black bg-zinc-100 flex items-center justify-center font-black uppercase text-xs opacity-50">
+                          No Preview Available
+                        </div>
+                      )}
 
-              {/* Graphic Project 2: Visual Photo */}
-              <div
-                onClick={() => {
-                  setLightboxSrc("/photo-visual.webp");
-                  setLightboxAlt("Visual Photo");
-                }}
-                className="flex-shrink-0 w-[300px] md:w-[380px] snap-start border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-2 transition-all duration-300 flex flex-col cursor-zoom-in"
-              >
-                <div className="relative w-full h-[220px] border-b-2 border-black overflow-hidden bg-zinc-100 group">
-                  <Image
-                    src="/photo-visual.webp"
-                    alt="Photo Visual"
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 bg-orange-500 border-2 border-black text-[10px] font-black uppercase pointer-events-none">
-                    Design
-                  </div>
-                </div>
-                <div className="p-5 flex flex-col gap-3 flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-base font-black uppercase tracking-tight leading-tight">Visual Photo</h3>
-                    <span className="flex-shrink-0 text-xs font-black px-2 py-1 bg-blue-400 border-2 border-black">#02</span>
-                  </div>
-                  <p className="text-sm font-medium opacity-70 leading-relaxed flex-1">
-                    {t("graphic_proj2_desc")}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {["Creative", "Design", "Grading"].map((t) => (
-                      <span key={t} className="text-[10px] font-black uppercase px-2 py-0.5 border-2 border-black bg-zinc-100">{t}</span>
-                    ))}
-                  </div>
-                  <button className="inline-flex items-center justify-center gap-2 px-4 py-2 border-2 border-black bg-black text-white text-xs font-black uppercase tracking-widest hover:bg-blue-400 hover:text-black shadow-[3px_3px_0px_0px_rgba(96,165,250,1)] hover:shadow-none transition-all duration-200">
-                    {t("proj_view_artwork")}
-                  </button>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* ── MOTION GRAPHIC TAB CONTENT ── */}
-          {activeTab === "motion" && (
-            <>
-              {/* Motion Project 1: Kinetic Motion & Micro-Animations */}
-              <div
-                className="flex-shrink-0 w-[300px] md:w-[380px] snap-start border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-2 transition-all duration-300 flex flex-col"
-              >
-                <div className="relative w-full h-[220px] border-b-2 border-black overflow-hidden bg-zinc-950 flex items-center justify-center p-4">
-                  <Image
-                    src="/Animations.gif"
-                    alt="Motion Graphics Showcase"
-                    fill
-                    className="object-contain p-2"
-                    unoptimized
-                  />
-                  <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 bg-purple-400 border-2 border-black text-[10px] font-black uppercase pointer-events-none">
-                    Motion
-                  </div>
-                </div>
-                <div className="p-5 flex flex-col gap-3 flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-base font-black uppercase tracking-tight leading-tight">{t("motion_proj1_title")}</h3>
-                    <span className="flex-shrink-0 text-xs font-black px-2 py-1 bg-purple-400 border-2 border-black">#01</span>
-                  </div>
-                  <p className="text-sm font-medium opacity-70 leading-relaxed flex-1">
-                    {t("motion_proj1_desc")}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {["After Effects", "GSAP", "2D Animation"].map((t) => (
-                      <span key={t} className="text-[10px] font-black uppercase px-2 py-0.5 border-2 border-black bg-zinc-100">{t}</span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* ── UI/UX TAB CONTENT ── */}
-          {activeTab === "uiux" && (
-            <div className="flex-shrink-0 w-[300px] md:w-[380px] snap-start border-2 border-dashed border-black bg-white p-12 flex flex-col justify-center items-center gap-2 text-center my-2">
-              <h3 className="text-xl font-black uppercase tracking-widest">{t("proj_coming_soon")}</h3>
-              <p className="text-xs font-bold uppercase tracking-wider opacity-50">UI/UX Projects</p>
-            </div>
-          )}
-
-              {/* ── More Coming Soon (Always visible for multi-item tabs) ── */}
-              {activeTab !== "uiux" && (
-                <div className="flex-shrink-0 w-[180px] snap-start border-2 border-dashed border-black flex flex-col items-center justify-center gap-3 p-8 text-center opacity-40 hover:opacity-70 transition-opacity duration-300">
-                  <div className="text-4xl font-black">+</div>
-                  <p className="text-xs font-black uppercase tracking-widest">{t("proj_more_coming")}</p>
-                </div>
+                      {/* Card Body */}
+                      <div className="p-5 flex flex-col gap-3 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="text-base font-black uppercase tracking-tight leading-tight">{proj.title}</h3>
+                          <span className="flex-shrink-0 text-xs font-black px-2 py-1 bg-blue-400 border-2 border-black">
+                            {badgeLabel}
+                          </span>
+                        </div>
+                        <p className="text-sm font-medium opacity-70 leading-relaxed flex-1">
+                          {proj.description}
+                        </p>
+                        {proj.tags && proj.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {proj.tags.map((t) => (
+                              <span key={t} className="text-[10px] font-black uppercase px-2 py-0.5 border-2 border-black bg-zinc-100">
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 mt-1">
+                          {proj.liveUrl && (
+                            <a
+                              href={proj.liveUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 border-2 border-black bg-black text-white text-xs font-black uppercase tracking-widest hover:bg-blue-400 hover:text-black shadow-[3px_3px_0px_0px_rgba(96,165,250,1)] hover:shadow-none transition-all duration-200"
+                            >
+                              {t("proj_view_site")}
+                            </a>
+                          )}
+                          {proj.proofUrl && (
+                            <a
+                              href={proj.proofUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-flex items-center justify-center gap-1 px-3 py-2 border-2 border-black bg-yellow-300 hover:bg-yellow-400 text-black text-xs font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                              title="Lihat Bukti"
+                            >
+                              {t("exp_proof_link")}
+                            </a>
+                          )}
+                          {!proj.liveUrl && proj.imageUrl && (
+                            <button
+                              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 border-2 border-black bg-black text-white text-xs font-black uppercase tracking-widest hover:bg-blue-400 hover:text-black shadow-[3px_3px_0px_0px_rgba(96,165,250,1)] hover:shadow-none transition-all duration-200"
+                            >
+                              {t("proj_view_artwork")}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    );
+                  })
               )}
+
+              {/* More Coming Soon */}
+              <div className="flex-shrink-0 w-[180px] snap-start border-2 border-dashed border-black flex flex-col items-center justify-center gap-3 p-8 text-center opacity-40 hover:opacity-70 transition-opacity duration-300">
+                <div className="text-4xl font-black">+</div>
+                <p className="text-xs font-black uppercase tracking-widest">{t("proj_more_coming")}</p>
+              </div>
             </motion.div>
           </AnimatePresence>
         </div>
@@ -1385,71 +1394,114 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-          {/* Education */}
-          <div className="scroll-card-reveal border-2 border-black p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white">
+          {/* Education & Achievements Card */}
+          <div className="scroll-card-reveal border-2 border-black p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white relative">
+            {guestRole === "OWNER" && (
+              <button
+                onClick={() => openOwnerModal("education", portfolioEducation)}
+                className="absolute top-4 right-4 px-3 py-1 bg-yellow-300 hover:bg-yellow-400 text-black border-2 border-black text-xs font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] cursor-pointer"
+                title="Edit Pendidikan & Tambah Prestasi"
+              >
+                ✏️ Edit & Tambah Prestasi
+              </button>
+            )}
             <p className="text-xs font-black uppercase tracking-[0.2em] opacity-70 mb-3">{t("bio_edu_label")}</p>
-            <h3 className="text-xl font-black uppercase tracking-tight">{t("edu_school")}</h3>
-            <p className="text-base font-bold text-blue-400">{t("edu_major")}</p>
-            <p className="text-sm opacity-50 mt-1">{t("edu_loc")}</p>
-            <a
-              href="https://pddikti.kemdiktisaintek.go.id/detail-mahasiswa/yTRHeSUMXwTVL5h1p4Jtsz-1y1ySDhzuM_dCtC_15sYwSWeSoGQikxT6PQHK4ghn1mHZtQ=="
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 mt-2 text-[10px] font-black uppercase tracking-widest text-blue-500 hover:text-blue-600 hover:underline"
-            >
-              {t("edu_verify_status")}
-            </a>
+            <h3 className="text-xl font-black uppercase tracking-tight">{portfolioEducation?.school || t("edu_school")}</h3>
+            <p className="text-base font-bold text-blue-400">{portfolioEducation?.major || t("edu_major")}</p>
+            <p className="text-sm opacity-50 mt-1">{portfolioEducation?.locationStatus || t("edu_loc")}</p>
+            {portfolioEducation?.verifyUrl && (
+              <a
+                href={portfolioEducation.verifyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 mt-2 text-[10px] font-black uppercase tracking-widest text-blue-500 hover:text-blue-600 hover:underline"
+              >
+                {t("edu_verify_status")}
+              </a>
+            )}
 
-            {/* SINTA 5 Achievement */}
-            <div className="mt-4 border-t border-black/10 pt-4">
-              <p className="text-xs font-black uppercase tracking-[0.15em] opacity-70 mb-1">{t("edu_achievements_label")}</p>
-              <p className="text-sm font-bold leading-snug">
-                {t("edu_achievement_sinta")}{" "}
-                <a
-                  href="https://garuda.kemdiktisaintek.go.id/documents/detail/6586037"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-xs font-black uppercase text-blue-500 hover:text-blue-600 hover:underline"
-                >
-                  ({t("exp_proof_link")})
-                </a>
-              </p>
-            </div>
+            {/* Achievements */}
+            {portfolioEducation?.achievements && portfolioEducation.achievements.length > 0 && (
+              <div className="mt-5 border-t-2 border-black/10 pt-4 flex flex-col gap-3.5">
+                {portfolioEducation.achievements.map((ach) => (
+                  <div key={ach.id} className="border-l-4 border-orange-500 pl-3">
+                    <p className="text-[11px] font-black uppercase tracking-[0.15em] text-orange-600 mb-0.5">
+                      {ach.label || t("edu_achievements_label")}
+                    </p>
+                    <p className="text-sm font-bold leading-snug">
+                      {ach.text}{" "}
+                      {ach.proofUrl && (
+                        <a
+                          href={ach.proofUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center text-xs font-black uppercase text-blue-500 hover:text-blue-600 hover:underline ml-1"
+                        >
+                          ({t("exp_proof_link")})
+                        </a>
+                      )}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Certifications */}
-          <div className="scroll-card-reveal border-2 border-black p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white">
-            <p className="text-xs font-black uppercase tracking-[0.2em] opacity-70 mb-4">Certifications</p>
+          {/* Certifications Card */}
+          <div className="scroll-card-reveal border-2 border-black p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white relative">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-xs font-black uppercase tracking-[0.2em] opacity-70">Certifications</p>
+              {guestRole === "OWNER" && (
+                <button
+                  onClick={() => openOwnerModal("certificate", null)}
+                  className="px-2.5 py-1 bg-yellow-300 hover:bg-yellow-400 text-black border-2 border-black text-[10px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] cursor-pointer"
+                >
+                  + Tambah Sertifikat
+                </button>
+              )}
+            </div>
             <div className="flex flex-col gap-4">
-              <div className="border-l-4 border-orange-500 pl-4">
-                <p className="text-sm font-black">{t("cert1_title")}</p>
-                <p className="text-xs opacity-60">{t("cert1_org")} &mdash; No. IL2C5B030V025</p>
-                <p className="text-xs opacity-70">{t("cert1_date")}</p>
-                <a
-                  href="https://www.dicoding.com/certificates/0LZ056D0NX65"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-black uppercase tracking-widest text-blue-500 hover:text-blue-600 hover:underline"
-                >
-                  {t("cert_verify")}
-                </a>
-              </div>
-              <div className="border-l-4 border-blue-400 pl-4">
-                <p className="text-sm font-black">{t("cert2_title")}</p>
-                <p className="text-xs opacity-60">{t("cert2_org")} &mdash; No. 1151504945-144</p>
-                <a
-                  href="https://digitalent.komdigi.go.id/cek-sertifikat?registrasi=19510546840-144"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-black uppercase tracking-widest text-blue-500 hover:text-blue-600 hover:underline"
-                >
-                  {t("cert_verify")}
-                </a>
-              </div>
-              <div className="border-l-4 border-black pl-4">
-                <p className="text-sm font-black">{t("cert3_title")}</p>
-                <p className="text-xs opacity-60">{t("cert3_org")} &mdash; No. 2220702650-7619</p>
-              </div>
+              {portfolioCertificates.map((cert) => (
+                <div key={cert.id} className={`border-l-4 ${cert.borderColor || "border-orange-500"} pl-4 relative group`}>
+                  {guestRole === "OWNER" && (
+                    <div className="absolute top-0 right-0 flex items-center gap-1 opacity-80 group-hover:opacity-100">
+                      <button
+                        onClick={() => openOwnerModal("certificate", cert)}
+                        className="px-1.5 py-0.5 bg-yellow-300 hover:bg-yellow-400 text-black border border-black text-[9px] font-black uppercase cursor-pointer"
+                        title="Edit Sertifikat"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Hapus sertifikat ${cert.title}?`)) {
+                            handleDeleteCertificate(cert.id);
+                          }
+                        }}
+                        className="px-1.5 py-0.5 bg-red-500 hover:bg-red-600 text-white border border-black text-[9px] font-black uppercase cursor-pointer"
+                        title="Hapus Sertifikat"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  )}
+                  <p className="text-sm font-black">{cert.title}</p>
+                  <p className="text-xs opacity-60">
+                    {cert.org} {cert.credentialNo ? `— ${cert.credentialNo}` : ""}
+                  </p>
+                  {cert.date && <p className="text-xs opacity-70">{cert.date}</p>}
+                  {cert.verifyUrl && (
+                    <a
+                      href={cert.verifyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-black uppercase tracking-widest text-blue-500 hover:text-blue-600 hover:underline"
+                    >
+                      {t("cert_verify")}
+                    </a>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -1625,7 +1677,21 @@ export default function Home() {
                   {guestInstagram && <p className="text-pink-400">IG: @{guestInstagram}</p>}
                 </div>
               </div>
-              <p>{t("guest_role")}: {guestRole} {guestRole === "OWNER" && t("guest_owner_desc")}</p>
+              <div className="flex items-center justify-between">
+                <p>{t("guest_role")}: {guestRole} {guestRole === "OWNER" && t("guest_owner_desc")}</p>
+                {guestRole === "OWNER" && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleResetAllData();
+                    }}
+                    className="text-[9px] font-black uppercase text-red-400 hover:text-red-300 underline"
+                  >
+                    Reset Data Default
+                  </button>
+                )}
+              </div>
             </div>
 
             <form onSubmit={handleOpenCharacterCustomizer} className="flex flex-col gap-3">
@@ -1958,6 +2024,22 @@ export default function Home() {
         onConfirm={handleConfirmCommentWithAvatar}
         initialName={guestName}
         initialInstagram={guestInstagram}
+      />
+
+      {/* Modal Mode Owner: Add & Edit Projects, Experiences, Education, Certificates */}
+      <OwnerContentModal
+        isOpen={isOwnerModalOpen}
+        onClose={() => setIsOwnerModalOpen(false)}
+        modalType={ownerModalType}
+        initialData={ownerModalData}
+        onSaveProject={handleSaveProject}
+        onDeleteProject={handleDeleteProject}
+        onSaveExperience={handleSaveExperience}
+        onDeleteExperience={handleDeleteExperience}
+        onSaveEducation={handleSaveEducation}
+        onSaveCertificate={handleSaveCertificate}
+        onDeleteCertificate={handleDeleteCertificate}
+        onSaveSkills={handleSaveSkills}
       />
     </main>
   );
