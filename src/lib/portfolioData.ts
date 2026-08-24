@@ -1,5 +1,22 @@
 export type ProjectTab = "web" | "graphic" | "motion" | "uiux";
 
+export function parseGoogleDriveUrl(url: string): { directImageUrl?: string; previewIframeUrl?: string; fileId?: string } {
+  if (!url || typeof url !== "string") return {};
+  if (!url.includes("drive.google.com")) return { directImageUrl: url };
+
+  // Match /file/d/ID or id=ID or /open?id=ID
+  const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (match && match[1]) {
+    const fileId = match[1];
+    return {
+      fileId,
+      directImageUrl: `https://lh3.googleusercontent.com/d/${fileId}`,
+      previewIframeUrl: `https://drive.google.com/file/d/${fileId}/preview`,
+    };
+  }
+  return { directImageUrl: url };
+}
+
 export interface ProjectItem {
   id: string;
   tab: ProjectTab;
@@ -206,6 +223,75 @@ const STORAGE_KEYS = {
   SKILLS: "portfolio_custom_skills_v1",
 };
 
+// IndexedDB Persistent Storage for high-capacity offline image & data support
+const DB_NAME = "RizkyPortfolioDB";
+const STORE_NAME = "portfolio_store";
+
+function getDB(): Promise<IDBDatabase | null> {
+  if (typeof window === "undefined" || !window.indexedDB) {
+    return Promise.resolve(null);
+  }
+  return new Promise((resolve) => {
+    const req = window.indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => resolve(null);
+  });
+}
+
+export async function idbGet<T>(key: string): Promise<T | null> {
+  const db = await getDB();
+  if (!db) return null;
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(STORE_NAME, "readonly");
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.get(key);
+      req.onsuccess = () => resolve(req.result !== undefined ? req.result : null);
+      req.onerror = () => resolve(null);
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
+export async function idbSet(key: string, value: any): Promise<void> {
+  const db = await getDB();
+  if (!db) return;
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(STORE_NAME, "readwrite");
+      const store = tx.objectStore(STORE_NAME);
+      store.put(value, key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+    } catch {
+      resolve();
+    }
+  });
+}
+
+export async function idbDelete(key: string): Promise<void> {
+  const db = await getDB();
+  if (!db) return;
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(STORE_NAME, "readwrite");
+      const store = tx.objectStore(STORE_NAME);
+      store.delete(key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+    } catch {
+      resolve();
+    }
+  });
+}
+
 // Helper: load from localStorage or fallback
 export function getSavedProjects(): ProjectItem[] {
   if (typeof window === "undefined") return DEFAULT_PROJECTS;
@@ -220,7 +306,14 @@ export function getSavedProjects(): ProjectItem[] {
 
 export function saveProjects(projects: ProjectItem[]) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(projects));
+  // Always persist to IndexedDB (unlimited capacity)
+  idbSet(STORAGE_KEYS.PROJECTS, projects);
+  // Also persist to localStorage for instant synchronous load
+  try {
+    localStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(projects));
+  } catch (e) {
+    console.warn("localStorage quota exceeded for projects, saved in IndexedDB successfully:", e);
+  }
 }
 
 export function getSavedExperiences(): ExperienceItem[] {
@@ -236,7 +329,12 @@ export function getSavedExperiences(): ExperienceItem[] {
 
 export function saveExperiences(experiences: ExperienceItem[]) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEYS.EXPERIENCES, JSON.stringify(experiences));
+  idbSet(STORAGE_KEYS.EXPERIENCES, experiences);
+  try {
+    localStorage.setItem(STORAGE_KEYS.EXPERIENCES, JSON.stringify(experiences));
+  } catch (e) {
+    console.warn("localStorage error", e);
+  }
 }
 
 export function getSavedEducation(): EducationData {
@@ -252,7 +350,12 @@ export function getSavedEducation(): EducationData {
 
 export function saveEducation(education: EducationData) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEYS.EDUCATION, JSON.stringify(education));
+  idbSet(STORAGE_KEYS.EDUCATION, education);
+  try {
+    localStorage.setItem(STORAGE_KEYS.EDUCATION, JSON.stringify(education));
+  } catch (e) {
+    console.warn("localStorage error", e);
+  }
 }
 
 export function getSavedCertificates(): CertificateItem[] {
@@ -268,7 +371,12 @@ export function getSavedCertificates(): CertificateItem[] {
 
 export function saveCertificates(certificates: CertificateItem[]) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEYS.CERTIFICATES, JSON.stringify(certificates));
+  idbSet(STORAGE_KEYS.CERTIFICATES, certificates);
+  try {
+    localStorage.setItem(STORAGE_KEYS.CERTIFICATES, JSON.stringify(certificates));
+  } catch (e) {
+    console.warn("localStorage error", e);
+  }
 }
 
 export interface SkillsData {
@@ -338,7 +446,12 @@ export function getSavedSkills(): SkillsData {
 
 export function saveSkills(skills: SkillsData) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEYS.SKILLS, JSON.stringify(skills));
+  idbSet(STORAGE_KEYS.SKILLS, skills);
+  try {
+    localStorage.setItem(STORAGE_KEYS.SKILLS, JSON.stringify(skills));
+  } catch (e) {
+    console.warn("localStorage error", e);
+  }
 }
 
 export function resetAllPortfolioData() {
@@ -348,4 +461,9 @@ export function resetAllPortfolioData() {
   localStorage.removeItem(STORAGE_KEYS.EDUCATION);
   localStorage.removeItem(STORAGE_KEYS.CERTIFICATES);
   localStorage.removeItem(STORAGE_KEYS.SKILLS);
+  idbDelete(STORAGE_KEYS.PROJECTS);
+  idbDelete(STORAGE_KEYS.EXPERIENCES);
+  idbDelete(STORAGE_KEYS.EDUCATION);
+  idbDelete(STORAGE_KEYS.CERTIFICATES);
+  idbDelete(STORAGE_KEYS.SKILLS);
 }

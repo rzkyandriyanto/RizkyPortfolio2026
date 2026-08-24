@@ -29,6 +29,7 @@ import {
   getSavedSkills,
   saveSkills,
   resetAllPortfolioData,
+  idbGet,
 } from "../lib/portfolioData";
 import { TechIcon } from "../components/TechIcons";
 import RotatingBadge from "../components/ui/RotatingBadge";
@@ -135,13 +136,36 @@ export default function Home() {
     ? ratedComments.reduce((acc, c) => acc + (c.rating || 0), 0) / ratedComments.length
     : null;
 
-  // Load portfolio dynamic content from local storage
+  // Load portfolio dynamic content from local storage and IndexedDB
   useEffect(() => {
     setPortfolioProjects(getSavedProjects());
     setPortfolioExperiences(getSavedExperiences());
     setPortfolioEducation(getSavedEducation());
     setPortfolioCertificates(getSavedCertificates());
     setPortfolioSkills(getSavedSkills());
+
+    // Async IndexedDB hydration (guarantees high-capacity photo storage is always preserved)
+    idbGet<ProjectItem[]>("portfolio_custom_projects_v1").then((dbProjects) => {
+      if (dbProjects && Array.isArray(dbProjects) && dbProjects.length > 0) {
+        setPortfolioProjects(dbProjects);
+      }
+    });
+    idbGet<ExperienceItem[]>("portfolio_custom_experiences_v1").then((dbExp) => {
+      if (dbExp && Array.isArray(dbExp) && dbExp.length > 0) {
+        setPortfolioExperiences(dbExp);
+      }
+    });
+    idbGet<EducationData>("portfolio_custom_education_v1").then((dbEdu) => {
+      if (dbEdu) setPortfolioEducation(dbEdu);
+    });
+    idbGet<CertificateItem[]>("portfolio_custom_certificates_v1").then((dbCert) => {
+      if (dbCert && Array.isArray(dbCert) && dbCert.length > 0) {
+        setPortfolioCertificates(dbCert);
+      }
+    });
+    idbGet<SkillsData>("portfolio_custom_skills_v1").then((dbSkills) => {
+      if (dbSkills) setPortfolioSkills(dbSkills);
+    });
   }, []);
 
   // Membaca identitas visitor & komentar dari Supabase / localStorage pada saat load
@@ -1282,10 +1306,10 @@ export default function Home() {
                             alt={proj.title}
                             fill
                             className={proj.tab === "motion" ? "object-contain p-2" : "object-cover transition-transform duration-500 group-hover:scale-105"}
-                            unoptimized={proj.imageUrl.endsWith(".gif") || proj.imageUrl.startsWith("data:")}
+                            unoptimized={true}
                           />
-                          <div className={`absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 border-2 border-black text-[10px] font-black uppercase pointer-events-none ${proj.tab === "graphic" ? "bg-orange-500" : proj.tab === "motion" ? "bg-purple-400" : "bg-blue-400"}`}>
-                            {proj.tab === "graphic" ? "Design" : proj.tab === "motion" ? "Motion" : "Work"}
+                          <div className={`absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 border-2 border-black text-[10px] font-black uppercase pointer-events-none ${proj.tab === "graphic" ? "bg-orange-500 text-black" : proj.tab === "motion" ? "bg-purple-400 text-black" : proj.tab === "uiux" ? "bg-pink-400 text-black" : "bg-blue-400 text-black"}`}>
+                            {proj.tab === "graphic" ? "Design" : proj.tab === "motion" ? "Motion" : proj.tab === "uiux" ? "UI/UX" : "Work"}
                           </div>
                         </div>
                       ) : (

@@ -10,6 +10,7 @@ import {
   CertificateItem,
   ProjectTab,
   SkillsData,
+  parseGoogleDriveUrl,
 } from "../lib/portfolioData";
 import { TechIcon } from "./TechIcons";
 
@@ -71,8 +72,8 @@ export default function OwnerContentModal({
         const canvas = document.createElement("canvas");
         let { width, height } = img;
 
-        // Skala proporsional jika resolusi sangat besar (max 1600px) agar ukuran efisien dan jernih
-        const maxDim = 1600;
+        // Skala proporsional optimal (max 960px) agar gambar sangat tajam tapi ukuran file hemat (~30-60 KB)
+        const maxDim = 960;
         if (width > maxDim || height > maxDim) {
           if (width > height) {
             height = Math.round((height * maxDim) / width);
@@ -88,9 +89,13 @@ export default function OwnerContentModal({
         const ctx = canvas.getContext("2d");
 
         if (ctx) {
+          // Bersihkan canvas dan gambar ulang dengan smoothing tinggi
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
           ctx.drawImage(img, 0, 0, width, height);
-          // Konversi ke format image/webp dengan kualitas tinggi 0.90
-          const webpDataUrl = canvas.toDataURL("image/webp", 0.9);
+
+          // Konversi ke format image/webp dengan kompresi pintar 0.82
+          const webpDataUrl = canvas.toDataURL("image/webp", 0.82);
           setProjImageUrl(webpDataUrl);
 
           // Hitung estimasi ukuran WebP
@@ -421,7 +426,18 @@ export default function OwnerContentModal({
                       type="url"
                       placeholder="https://my-awesome-project.com"
                       value={projLiveUrl}
-                      onChange={(e) => setProjLiveUrl(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val.includes("drive.google.com")) {
+                          const parsed = parseGoogleDriveUrl(val);
+                          if (parsed.previewIframeUrl) {
+                            setProjLiveUrl(parsed.previewIframeUrl);
+                            setProjIsIframe(true);
+                            return;
+                          }
+                        }
+                        setProjLiveUrl(val);
+                      }}
                       className="w-full border-2 border-black p-2.5 text-xs font-bold bg-white focus:outline-none focus:bg-yellow-50 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
                     />
                   </div>
@@ -443,10 +459,10 @@ export default function OwnerContentModal({
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
                       <span>🖼️</span>
-                      <span>Foto / Artwork (Otomatis Convert ke WebP)</span>
+                      <span>Foto / Artwork / Google Drive</span>
                     </label>
                     <span className="text-[10px] font-bold bg-green-400 border border-black px-1.5 py-0.5 text-black uppercase shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
-                      Auto WebP ⚡
+                      Auto WebP & GDrive ⚡
                     </span>
                   </div>
 
@@ -454,7 +470,7 @@ export default function OwnerContentModal({
                   <div className="flex flex-col sm:flex-row items-center gap-3">
                     <label className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-yellow-200 border-2 border-black font-black text-xs uppercase tracking-wider cursor-pointer shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 transition-all select-none">
                       <span>📁</span>
-                      <span>{isConvertingImage ? "Mengonversi ke WebP..." : "Pilih Foto (JPG, PNG, WebP)"}</span>
+                      <span>{isConvertingImage ? "Mengonversi ke WebP..." : "Pilih Foto dari Perangkat"}</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -476,46 +492,58 @@ export default function OwnerContentModal({
                     )}
                   </div>
 
-                  {/* Preview of Converted WebP */}
+                  {/* Preview of Converted WebP / GDrive */}
                   {projImageUrl && (
                     <div className="flex items-center gap-3 p-2 bg-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                       <div className="w-16 h-16 border border-black bg-zinc-100 relative overflow-hidden flex-shrink-0">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={projImageUrl}
-                          alt="Preview WebP"
+                          alt="Preview Artwork"
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <div className="flex-1 overflow-hidden">
                         <p className="text-xs font-black text-green-600 flex items-center gap-1">
-                          <span>✓</span> Format: WebP Siap Tampil
+                          <span>✓</span> Format Gambar Siap Tampil
                         </p>
                         {imageSizeInfo && (
                           <p className="text-[10px] font-bold text-zinc-500 truncate" dangerouslySetInnerHTML={{ __html: imageSizeInfo }} />
                         )}
                         <p className="text-[10px] text-zinc-400 truncate mt-0.5">
-                          {projImageUrl.startsWith("data:") ? "Base64 WebP Data URL" : projImageUrl}
+                          {projImageUrl.startsWith("data:") ? "Base64 Compressed WebP" : projImageUrl}
                         </p>
                       </div>
                     </div>
                   )}
 
-                  {/* Atau Input URL Manual */}
+                  {/* Input URL Manual / GDrive */}
                   <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-600 mb-1">
-                      Atau ketik URL / Path Gambar Manual:
+                      Atau Tempel Link Google Drive / Path Gambar:
                     </label>
                     <input
                       type="text"
-                      placeholder="/dudul-artwork.webp atau URL gambar eksternal"
+                      placeholder="Tempel link Google Drive atau /dudul-artwork.webp"
                       value={projImageUrl.startsWith("data:") ? "(Foto WebP Terupload)" : projImageUrl}
                       onChange={(e) => {
-                        setProjImageUrl(e.target.value);
+                        const val = e.target.value;
+                        if (val.includes("drive.google.com")) {
+                          const parsed = parseGoogleDriveUrl(val);
+                          if (parsed.directImageUrl) {
+                            setProjImageUrl(parsed.directImageUrl);
+                            setImageSizeInfo("✓ Google Drive Direct CDN Link Aktif");
+                            return;
+                          }
+                        }
+                        setProjImageUrl(val);
                         setImageSizeInfo("");
                       }}
                       className="w-full border-2 border-black p-2 text-xs font-bold bg-white focus:outline-none focus:bg-yellow-50 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                     />
+                    <span className="text-[10px] text-zinc-500 font-bold block mt-1">
+                      💡 Link Google Drive (Share: Anyone with the link) otomatis di-convert ke Direct CDN image.
+                    </span>
                   </div>
                 </div>
 
