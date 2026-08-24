@@ -11,6 +11,7 @@ import { supabase } from "../lib/supabase";
 import { useLanguage } from "../context/LanguageContext";
 import CharacterCustomizerModal from "../components/CharacterCustomizerModal";
 import { TechIcon } from "../components/TechIcons";
+import RotatingBadge from "../components/ui/RotatingBadge";
 
 // Register Plugin GSAP
 gsap.registerPlugin(ScrollTrigger);
@@ -58,6 +59,7 @@ export default function Home() {
   const bioSectionRef = useRef<HTMLDivElement>(null);
   const bioNarrativeRef = useRef<HTMLDivElement>(null);
   const projectsHeaderRef = useRef<HTMLDivElement>(null);
+  const projectsScrollRef = useRef<HTMLDivElement>(null);
   const projectCardsRef = useRef<HTMLDivElement[]>([]);
   const workExperienceRef = useRef<HTMLDivElement>(null);
   const skillsSectionRef = useRef<HTMLDivElement>(null);
@@ -72,6 +74,17 @@ export default function Home() {
 
   // State activeTab untuk Kategori Project Work
   const [activeTab, setActiveTab] = useState<"web" | "graphic" | "uiux" | "motion">("web");
+
+  const scrollProjects = (direction: "left" | "right") => {
+    if (projectsScrollRef.current) {
+      const container = projectsScrollRef.current;
+      const scrollAmount = container.clientWidth < 640 ? 324 : 404;
+      container.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
 
   // State untuk Guestbook / Komentar Pengunjung
   const [comments, setComments] = useState<GuestComment[]>([]);
@@ -557,10 +570,10 @@ export default function Home() {
             ref={nameContainerRef}
             className="w-full md:w-auto flex flex-col"
           >
-            <h1 className="font-bebas-neue text-[15vw] md:text-[20vw] uppercase leading-[0.85] tracking-tighter text-orange-500 pt-14">
+            <h1 className="font-bebas-neue text-[clamp(4rem,17vw,14rem)] uppercase leading-[0.85] tracking-tighter text-orange-500 pt-14">
               RIZKY
             </h1>
-            <h1 className="font-bebas-neue text-[15vw] md:text-[12vw] uppercase leading-[0.85] tracking-tighter text-blue-400">
+            <h1 className="font-bebas-neue text-[clamp(3.2rem,11.5vw,9.5rem)] uppercase leading-[0.85] tracking-tighter text-blue-400">
               ANDRIYANTO
             </h1>
           </div>
@@ -588,24 +601,33 @@ export default function Home() {
         <div
           id="about"
           ref={bioSectionRef}
-          className="grid grid-cols-1 md:grid-cols-2 gap-16 mt-6 w-full pb-6 scroll-mt-24"
+          className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 mt-6 w-full pb-6 scroll-mt-24"
         >
           {/* LEFT: Name, Title, Availability, Contact */}
           <div className="flex flex-col gap-6 text-black">
-            <div className="flex flex-col gap-2">
-              <h2 className="text-4xl font-black uppercase tracking-tighter leading-none">
-                RIZKY ANDRIYANTO <span className="text-orange-500">/ 23 Y.O</span>
+            <div className="flex flex-col gap-4">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tighter leading-tight">
+                CREATIVE DEVELOPER <span className="text-orange-500 whitespace-nowrap">/ 23 Y.O</span>
               </h2>
-              <p className="text-2xl font-bold leading-tight max-w-xl opacity-90">
-                {t("bio_title")}
-              </p>
+              <div className="text-xl sm:text-2xl md:text-3xl font-black uppercase leading-snug max-w-2xl text-black">
+                <span>{t("bio_title_prefix")}</span>{" "}
+                <RotatingBadge
+                  items={[
+                    { text: t("bio_rotating_word_1"), color: "bg-green-400 text-black" },
+                    { text: t("bio_rotating_word_2"), color: "bg-purple-400 text-black" },
+                    { text: t("bio_rotating_word_3"), color: "bg-blue-400 text-black" },
+                    { text: t("bio_rotating_word_4"), color: "bg-orange-500 text-black" },
+                  ]}
+                />{" "}
+                <span>{t("bio_title_suffix")}</span>
+              </div>
             </div>
           </div>
 
           {/* RIGHT: Location, Experience, Education */}
           <div className="flex flex-col md:items-end justify-between text-left md:text-right text-black gap-6">
             <div className="space-y-1">
-              <p className="text-sm font-black uppercase tracking-[0.2em] opacity-40">
+              <p className="text-sm font-black uppercase tracking-[0.2em] opacity-70">
                 {t("bio_location_label")}
               </p>
               <p className="text-2xl font-black uppercase">
@@ -613,7 +635,7 @@ export default function Home() {
               </p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm font-black uppercase tracking-[0.2em] opacity-40">
+              <p className="text-sm font-black uppercase tracking-[0.2em] opacity-70">
                 {t("bio_exp_label")}
               </p>
               <p className="text-2xl font-black uppercase">
@@ -621,7 +643,7 @@ export default function Home() {
               </p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm font-black uppercase tracking-[0.2em] opacity-40">
+              <p className="text-sm font-black uppercase tracking-[0.2em] opacity-70">
                 {t("bio_edu_label")}
               </p>
               <p className="text-xl font-black uppercase leading-tight">
@@ -946,7 +968,7 @@ export default function Home() {
           {/* Soft Skills */}
           <div className="border-2 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-orange-50 flex flex-col justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40 mb-4">Soft Skills</p>
+              <p className="text-xs font-black uppercase tracking-[0.2em] opacity-70 mb-4">Soft Skills</p>
               <div className="flex flex-wrap gap-2">
                 {[
                   "Analytical Thinking",
@@ -977,7 +999,7 @@ export default function Home() {
           {/* Hard Skills */}
           <div className="border-2 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-blue-50 flex flex-col justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40 mb-4">Hard Skills</p>
+              <p className="text-xs font-black uppercase tracking-[0.2em] opacity-70 mb-4">Hard Skills</p>
               <div className="flex flex-wrap gap-2">
                 {[
                   "HTML",
@@ -1010,7 +1032,7 @@ export default function Home() {
           {/* Software Skills */}
           <div className="border-2 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-zinc-50 flex flex-col justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40 mb-4">Software Skills</p>
+              <p className="text-xs font-black uppercase tracking-[0.2em] opacity-70 mb-4">Software Skills</p>
               <div className="flex flex-wrap gap-2">
                 {[
                   "VS Code",
@@ -1053,30 +1075,42 @@ export default function Home() {
           </div>
 
           {/* Neobrutalist Tabs Navigation */}
-          <div className="flex flex-wrap gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
-              onClick={() => setActiveTab("web")}
+              onClick={() => {
+                setActiveTab("web");
+                if (projectsScrollRef.current) projectsScrollRef.current.scrollLeft = 0;
+              }}
               className={`px-4 py-2 border-2 border-black text-xs font-black uppercase tracking-wider transition-all duration-150 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] cursor-pointer ${activeTab === "web" ? "bg-orange-500 text-black" : "bg-white text-black hover:bg-zinc-100"
                 }`}
             >
               Web Dev
             </button>
             <button
-              onClick={() => setActiveTab("graphic")}
+              onClick={() => {
+                setActiveTab("graphic");
+                if (projectsScrollRef.current) projectsScrollRef.current.scrollLeft = 0;
+              }}
               className={`px-4 py-2 border-2 border-black text-xs font-black uppercase tracking-wider transition-all duration-150 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] cursor-pointer ${activeTab === "graphic" ? "bg-blue-400 text-black" : "bg-white text-black hover:bg-zinc-100"
                 }`}
             >
               Graphic Design
             </button>
             <button
-              onClick={() => setActiveTab("motion")}
+              onClick={() => {
+                setActiveTab("motion");
+                if (projectsScrollRef.current) projectsScrollRef.current.scrollLeft = 0;
+              }}
               className={`px-4 py-2 border-2 border-black text-xs font-black uppercase tracking-wider transition-all duration-150 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] cursor-pointer ${activeTab === "motion" ? "bg-purple-400 text-black" : "bg-white text-black hover:bg-zinc-100"
                 }`}
             >
               Motion Graphic
             </button>
             <button
-              onClick={() => setActiveTab("uiux")}
+              onClick={() => {
+                setActiveTab("uiux");
+                if (projectsScrollRef.current) projectsScrollRef.current.scrollLeft = 0;
+              }}
               className={`px-4 py-2 border-2 border-black text-xs font-black uppercase tracking-wider transition-all duration-150 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] cursor-pointer ${activeTab === "uiux" ? "bg-green-400 text-black" : "bg-white text-black hover:bg-zinc-100"
                 }`}
             >
@@ -1086,7 +1120,8 @@ export default function Home() {
         </div>
 
         <div
-          className="overflow-x-auto pb-4"
+          ref={projectsScrollRef}
+          className="overflow-x-auto pb-4 scroll-smooth"
           style={{ scrollbarWidth: "thin", scrollbarColor: "#000 transparent" }}
         >
           <AnimatePresence mode="wait">
@@ -1186,14 +1221,14 @@ export default function Home() {
               {/* Graphic Project 1: Dudul Anak Baik */}
               <div
                 onClick={() => {
-                  setLightboxSrc("/Dudul Anak Baik.jpg");
+                  setLightboxSrc("/dudul-artwork.webp");
                   setLightboxAlt("Dudul Anak Baik");
                 }}
                 className="flex-shrink-0 w-[300px] md:w-[380px] snap-start border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-2 transition-all duration-300 flex flex-col cursor-zoom-in"
               >
                 <div className="relative w-full h-[220px] border-b-2 border-black overflow-hidden bg-zinc-100 group">
                   <Image
-                    src="/Dudul Anak Baik.jpg"
+                    src="/dudul-artwork.webp"
                     alt="Dudul Anak Baik"
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -1224,14 +1259,14 @@ export default function Home() {
               {/* Graphic Project 2: Visual Photo */}
               <div
                 onClick={() => {
-                  setLightboxSrc("/PhotoVisual.jpg");
+                  setLightboxSrc("/photo-visual.webp");
                   setLightboxAlt("Visual Photo");
                 }}
                 className="flex-shrink-0 w-[300px] md:w-[380px] snap-start border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-2 transition-all duration-300 flex flex-col cursor-zoom-in"
               >
                 <div className="relative w-full h-[220px] border-b-2 border-black overflow-hidden bg-zinc-100 group">
                   <Image
-                    src="/PhotoVisual.jpg"
+                    src="/photo-visual.webp"
                     alt="Photo Visual"
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -1316,6 +1351,26 @@ export default function Home() {
             </motion.div>
           </AnimatePresence>
         </div>
+
+        {/* Carousel Navigation Buttons (Di Bawah Project Cards / Di Atas Education) */}
+        <div className="flex items-center justify-center sm:justify-end gap-3 mt-6">
+          <button
+            onClick={() => scrollProjects("left")}
+            title="Scroll Left"
+            aria-label="Scroll Left"
+            className="w-10 h-10 flex items-center justify-center border-2 border-black bg-white hover:bg-zinc-100 text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer font-black text-sm select-none"
+          >
+            ◀
+          </button>
+          <button
+            onClick={() => scrollProjects("right")}
+            title="Scroll Right"
+            aria-label="Scroll Right"
+            className="w-10 h-10 flex items-center justify-center border-2 border-black bg-white hover:bg-zinc-100 text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer font-black text-sm select-none"
+          >
+            ▶
+          </button>
+        </div>
       </section>
 
       {/* ===================================================== */}
@@ -1332,7 +1387,7 @@ export default function Home() {
 
           {/* Education */}
           <div className="scroll-card-reveal border-2 border-black p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white">
-            <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40 mb-3">{t("bio_edu_label")}</p>
+            <p className="text-xs font-black uppercase tracking-[0.2em] opacity-70 mb-3">{t("bio_edu_label")}</p>
             <h3 className="text-xl font-black uppercase tracking-tight">{t("edu_school")}</h3>
             <p className="text-base font-bold text-blue-400">{t("edu_major")}</p>
             <p className="text-sm opacity-50 mt-1">{t("edu_loc")}</p>
@@ -1347,7 +1402,7 @@ export default function Home() {
 
             {/* SINTA 5 Achievement */}
             <div className="mt-4 border-t border-black/10 pt-4">
-              <p className="text-xs font-black uppercase tracking-[0.15em] opacity-40 mb-1">{t("edu_achievements_label")}</p>
+              <p className="text-xs font-black uppercase tracking-[0.15em] opacity-70 mb-1">{t("edu_achievements_label")}</p>
               <p className="text-sm font-bold leading-snug">
                 {t("edu_achievement_sinta")}{" "}
                 <a
@@ -1364,12 +1419,12 @@ export default function Home() {
 
           {/* Certifications */}
           <div className="scroll-card-reveal border-2 border-black p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white">
-            <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40 mb-4">Certifications</p>
+            <p className="text-xs font-black uppercase tracking-[0.2em] opacity-70 mb-4">Certifications</p>
             <div className="flex flex-col gap-4">
               <div className="border-l-4 border-orange-500 pl-4">
                 <p className="text-sm font-black">{t("cert1_title")}</p>
                 <p className="text-xs opacity-60">{t("cert1_org")} &mdash; No. IL2C5B030V025</p>
-                <p className="text-xs opacity-40">{t("cert1_date")}</p>
+                <p className="text-xs opacity-70">{t("cert1_date")}</p>
                 <a
                   href="https://www.dicoding.com/certificates/0LZ056D0NX65"
                   target="_blank"
@@ -1424,7 +1479,7 @@ export default function Home() {
               </svg>
             </div>
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40 group-hover:opacity-70">Gmail</p>
+              <p className="text-xs font-black uppercase tracking-[0.2em] opacity-70 group-hover:opacity-100">Gmail</p>
               <p className="text-base md:text-lg font-black group-hover:text-black transition-colors duration-300 break-all">
                 rizkyandriyanto16@gmail.com
               </p>
@@ -1445,7 +1500,7 @@ export default function Home() {
               </svg>
             </div>
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40 group-hover:opacity-70">LinkedIn</p>
+              <p className="text-xs font-black uppercase tracking-[0.2em] opacity-70 group-hover:opacity-100">LinkedIn</p>
               <p className="text-base md:text-lg font-black group-hover:text-black transition-colors duration-300">
                 rizky-andriyanto
               </p>
@@ -1466,7 +1521,7 @@ export default function Home() {
               </svg>
             </div>
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40 group-hover:opacity-70">Instagram</p>
+              <p className="text-xs font-black uppercase tracking-[0.2em] opacity-70 group-hover:opacity-100">Instagram</p>
               <p className="text-base md:text-lg font-black group-hover:text-black transition-colors duration-300">
                 @rzkyandriyanto
               </p>
@@ -1521,7 +1576,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Form Kirim Komentar */}
           <div className="md:col-span-1 border-2 border-black p-6 bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] self-start order-2 md:order-1">
-            <p className="text-xs font-black uppercase tracking-[0.2em] opacity-40 mb-3">{t("guest_post_title")}</p>
+            <p className="text-xs font-black uppercase tracking-[0.2em] opacity-70 mb-3">{t("guest_post_title")}</p>
 
             <div
               onClick={handleSecretOwnerUnlock}

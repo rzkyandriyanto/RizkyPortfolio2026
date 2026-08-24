@@ -186,7 +186,7 @@ function Header() {
                 filter: "drop-shadow(4px 4px 0px rgba(0,0,0,1))",
               }}
             >
-              <Image src="/WM.png" alt="RA Logo" fill className="object-contain" priority />
+              <Image src="/wm-logo.webp" alt="RA Logo" fill className="object-contain" priority />
             </motion.div>
           </Link>
 
@@ -211,7 +211,7 @@ function Header() {
                 filter: "drop-shadow(2px 2px 0px rgba(0,0,0,1))",
               }}
             >
-              <Image src="/WM.png" alt="RA Logo" fill className="object-contain" priority />
+              <Image src="/wm-logo.webp" alt="RA Logo" fill className="object-contain" priority />
             </motion.div>
           </Link>
 

@@ -12,7 +12,13 @@ export const translations = {
     nav_rating: "RATING",
 
     // Bio
-    bio_title: "A FRONT-END DEVELOPER FROM TANGERANG CITY. SPECIALIZING IN MODERN WEB EXPERIENCES.",
+    bio_title: "Not just writing code — I craft visual delight. Combining a deep love for colors, typography, and interactive design into experiences that look stunning and feel alive.",
+    bio_title_prefix: "Not just writing code — I craft visual delight. Combining a deep love for colors, typography, and",
+    bio_rotating_word_1: "UI/UX DESIGN",
+    bio_rotating_word_2: "MOTION ART",
+    bio_rotating_word_3: "GRAPHIC DESIGN",
+    bio_rotating_word_4: "INTERACTIVE WEB",
+    bio_title_suffix: "into digital experiences that look stunning and feel alive.",
     bio_location_label: "Location",
     bio_location_value: "Tangerang City, Indonesia",
     bio_exp_label: "Experience",
@@ -135,7 +141,13 @@ export const translations = {
     nav_rating: "RATING",
 
     // Bio
-    bio_title: "SEORANG FRONT-END DEVELOPER DARI KOTA TANGERANG. SPESIALISASI DALAM PENGALAMAN WEB MODERN.",
+    bio_title: "Bukan sekadar ngetik kode — gue merancang karya visual yang memanjakan mata. Menyatukan kepekaan warna, tipografi, dan desain interaktif jadi pengalaman digital yang hidup.",
+    bio_title_prefix: "Bukan sekadar ngetik kode — gue merancang karya visual yang memanjakan mata. Menyatukan kepekaan warna, tipografi, dan",
+    bio_rotating_word_1: "DESAIN UI/UX",
+    bio_rotating_word_2: "MOTION ART",
+    bio_rotating_word_3: "DESAIN GRAFIS",
+    bio_rotating_word_4: "WEB INTERAKTIF",
+    bio_title_suffix: "jadi pengalaman digital yang hidup.",
     bio_location_label: "Lokasi",
     bio_location_value: "Kota Tangerang, Indonesia",
     bio_exp_label: "Pengalaman",
