@@ -50,8 +50,6 @@ interface GuestComment {
   timestamp: string;
 }
 
-const CF_AVATAR_ENDPOINT = "https://ig-avatar.flovvers21.workers.dev";
-
 function InstagramVerifiedBadge() {
   return (
     <svg
@@ -81,7 +79,6 @@ export default function Home() {
   const bioNarrativeRef = useRef<HTMLDivElement>(null);
   const projectsHeaderRef = useRef<HTMLDivElement>(null);
   const projectsScrollRef = useRef<HTMLDivElement>(null);
-  const projectCardsRef = useRef<HTMLDivElement[]>([]);
   const workExperienceRef = useRef<HTMLDivElement>(null);
   const skillsSectionRef = useRef<HTMLDivElement>(null);
   const educationSectionRef = useRef<HTMLDivElement>(null);

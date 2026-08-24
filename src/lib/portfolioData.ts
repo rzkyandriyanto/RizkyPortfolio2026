@@ -260,7 +260,7 @@ export async function idbGet<T>(key: string): Promise<T | null> {
   });
 }
 
-export async function idbSet(key: string, value: any): Promise<void> {
+export async function idbSet(key: string, value: unknown): Promise<void> {
   const db = await getDB();
   if (!db) return;
   return new Promise((resolve) => {

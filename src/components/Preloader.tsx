@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 import gsap from "gsap";
 import EncryptedText from "./ui/EncryptedText";
 
