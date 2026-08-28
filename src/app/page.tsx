@@ -30,6 +30,8 @@ import {
   saveSkills,
   resetAllPortfolioData,
   idbGet,
+  idbSet,
+  fetchFromSupabase,
 } from "../lib/portfolioData";
 import { TechIcon } from "../components/TechIcons";
 import RotatingBadge from "../components/ui/RotatingBadge";
@@ -141,7 +143,7 @@ export default function Home() {
     setPortfolioCertificates(getSavedCertificates());
     setPortfolioSkills(getSavedSkills());
 
-    // Async IndexedDB hydration (guarantees high-capacity photo storage is always preserved)
+    // 1. Fast local cache hydration (IndexedDB)
     idbGet<ProjectItem[]>("portfolio_custom_projects_v1").then((dbProjects) => {
       if (dbProjects && Array.isArray(dbProjects) && dbProjects.length > 0) {
         setPortfolioProjects(dbProjects);
@@ -162,6 +164,43 @@ export default function Home() {
     });
     idbGet<SkillsData>("portfolio_custom_skills_v1").then((dbSkills) => {
       if (dbSkills) setPortfolioSkills(dbSkills);
+    });
+
+    // 2. Live Supabase Cloud hydration (ensures live cloud data across all devices/visitors)
+    fetchFromSupabase<ProjectItem[]>("projects").then((cloudProjects) => {
+      if (cloudProjects && Array.isArray(cloudProjects) && cloudProjects.length > 0) {
+        setPortfolioProjects(cloudProjects);
+        idbSet("portfolio_custom_projects_v1", cloudProjects);
+        try { localStorage.setItem("portfolio_custom_projects_v1", JSON.stringify(cloudProjects)); } catch {}
+      }
+    });
+    fetchFromSupabase<ExperienceItem[]>("experiences").then((cloudExp) => {
+      if (cloudExp && Array.isArray(cloudExp) && cloudExp.length > 0) {
+        setPortfolioExperiences(cloudExp);
+        idbSet("portfolio_custom_experiences_v1", cloudExp);
+        try { localStorage.setItem("portfolio_custom_experiences_v1", JSON.stringify(cloudExp)); } catch {}
+      }
+    });
+    fetchFromSupabase<EducationData>("education").then((cloudEdu) => {
+      if (cloudEdu) {
+        setPortfolioEducation(cloudEdu);
+        idbSet("portfolio_custom_education_v1", cloudEdu);
+        try { localStorage.setItem("portfolio_custom_education_v1", JSON.stringify(cloudEdu)); } catch {}
+      }
+    });
+    fetchFromSupabase<CertificateItem[]>("certificates").then((cloudCert) => {
+      if (cloudCert && Array.isArray(cloudCert) && cloudCert.length > 0) {
+        setPortfolioCertificates(cloudCert);
+        idbSet("portfolio_custom_certificates_v1", cloudCert);
+        try { localStorage.setItem("portfolio_custom_certificates_v1", JSON.stringify(cloudCert)); } catch {}
+      }
+    });
+    fetchFromSupabase<SkillsData>("skills").then((cloudSkills) => {
+      if (cloudSkills) {
+        setPortfolioSkills(cloudSkills);
+        idbSet("portfolio_custom_skills_v1", cloudSkills);
+        try { localStorage.setItem("portfolio_custom_skills_v1", JSON.stringify(cloudSkills)); } catch {}
+      }
     });
   }, []);
 

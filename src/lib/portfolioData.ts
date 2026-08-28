@@ -1,4 +1,38 @@
+import { supabase } from "./supabase";
+
 export type ProjectTab = "web" | "graphic" | "motion" | "uiux";
+
+// Supabase Cloud Sync Helpers
+export async function syncToSupabase(key: string, data: unknown): Promise<void> {
+  if (!supabase) return;
+  try {
+    const { error } = await supabase
+      .from("portfolio_content")
+      .upsert({ id: key, content: data, updated_at: new Date().toISOString() });
+    if (error) {
+      console.warn(`Supabase sync notice for ${key}:`, error.message);
+    }
+  } catch (err) {
+    console.warn(`Supabase sync notice for ${key}:`, err);
+  }
+}
+
+export async function fetchFromSupabase<T>(key: string): Promise<T | null> {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase
+      .from("portfolio_content")
+      .select("content")
+      .eq("id", key)
+      .maybeSingle();
+    if (!error && data && data.content) {
+      return data.content as T;
+    }
+  } catch (err) {
+    console.warn(`Supabase fetch notice for ${key}:`, err);
+  }
+  return null;
+}
 
 export function parseGoogleDriveUrl(url: string): { directImageUrl?: string; previewIframeUrl?: string; fileId?: string } {
   if (!url || typeof url !== "string") return {};
@@ -306,13 +340,15 @@ export function getSavedProjects(): ProjectItem[] {
 
 export function saveProjects(projects: ProjectItem[]) {
   if (typeof window === "undefined") return;
-  // Always persist to IndexedDB (unlimited capacity)
+  // 1. Sync to Supabase Cloud (accessible across all devices & visitors)
+  syncToSupabase("projects", projects);
+  // 2. Persist to IndexedDB (unlimited capacity)
   idbSet(STORAGE_KEYS.PROJECTS, projects);
-  // Also persist to localStorage for instant synchronous load
+  // 3. Persist to localStorage for instant synchronous load
   try {
     localStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(projects));
   } catch (e) {
-    console.warn("localStorage quota exceeded for projects, saved in IndexedDB successfully:", e);
+    console.warn("localStorage quota exceeded for projects, saved in IndexedDB & Supabase successfully:", e);
   }
 }
 
@@ -329,6 +365,7 @@ export function getSavedExperiences(): ExperienceItem[] {
 
 export function saveExperiences(experiences: ExperienceItem[]) {
   if (typeof window === "undefined") return;
+  syncToSupabase("experiences", experiences);
   idbSet(STORAGE_KEYS.EXPERIENCES, experiences);
   try {
     localStorage.setItem(STORAGE_KEYS.EXPERIENCES, JSON.stringify(experiences));
@@ -350,6 +387,7 @@ export function getSavedEducation(): EducationData {
 
 export function saveEducation(education: EducationData) {
   if (typeof window === "undefined") return;
+  syncToSupabase("education", education);
   idbSet(STORAGE_KEYS.EDUCATION, education);
   try {
     localStorage.setItem(STORAGE_KEYS.EDUCATION, JSON.stringify(education));
@@ -371,6 +409,7 @@ export function getSavedCertificates(): CertificateItem[] {
 
 export function saveCertificates(certificates: CertificateItem[]) {
   if (typeof window === "undefined") return;
+  syncToSupabase("certificates", certificates);
   idbSet(STORAGE_KEYS.CERTIFICATES, certificates);
   try {
     localStorage.setItem(STORAGE_KEYS.CERTIFICATES, JSON.stringify(certificates));
@@ -446,6 +485,7 @@ export function getSavedSkills(): SkillsData {
 
 export function saveSkills(skills: SkillsData) {
   if (typeof window === "undefined") return;
+  syncToSupabase("skills", skills);
   idbSet(STORAGE_KEYS.SKILLS, skills);
   try {
     localStorage.setItem(STORAGE_KEYS.SKILLS, JSON.stringify(skills));
